@@ -1,0 +1,22 @@
+.button {
+  width: auto;
+  color: black;
+  border: none;
+  padding: 1.5rem 2.5rem;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 0.75rem;
+  background-color: var(--level-2);
+  transition: 0.25s;
+  width: 172px;
+  height: 48px;
+}
+
+.accent {
+  /* color: var(--accent-text); */
+  background-color: rgb(98, 205, 254);
+}
