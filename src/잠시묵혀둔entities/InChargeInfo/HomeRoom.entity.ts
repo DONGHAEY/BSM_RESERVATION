@@ -7,7 +7,7 @@ export class HomeRoom extends BaseEntity {
     name: 'teacher_code',
     type: 'int',
   })
-  teacherCode: number; //학교에서 반을 관리할 때, 하나의 반만 관리하기 때문에 teacher_code에만 Primary를 주었다.
+  teacherCode: number; //선생님이 학교에서 반을 관리할 때, 하나의 반만 관리하기 때문에 teacher_code에만 Primary를 주었다.
   @Column({
     name: 'grade_no',
     type: 'int',

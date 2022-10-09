@@ -1,6 +1,14 @@
-import { BaseEntity, Column, Entity, JoinColumn, PrimaryColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
+import { User } from './User.entity';
 
-@Entity('Student_info')
+@Entity('student_info')
 export class StudentInfo extends BaseEntity {
   @PrimaryColumn({
     name: 'user_code',

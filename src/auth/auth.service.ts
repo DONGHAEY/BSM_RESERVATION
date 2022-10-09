@@ -1,9 +1,13 @@
 import { HttpService } from '@nestjs/axios';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-
+import { UserService } from 'src/user/user.service';
 @Injectable()
 export class AuthService {
-  constructor(private httpService: HttpService) {}
+  constructor(
+    private httpService: HttpService,
+    private userService: UserService,
+  ) {}
 
   readonly BSM_OAUTH_CLIENT_ID = 'e8f78fa2';
   readonly BSM_OAUTH_CLIENT_SECRET = 'b1c1feb1bec5fa28439b83f72c83856d';
@@ -25,6 +29,10 @@ export class AuthService {
       console.log(e.response.message);
       throw new UnauthorizedException();
     }
+  }
+
+  async getUserByCode(code: number) {
+    return await this.userService.test(code);
   }
 
   async getUserByToken(token: string): Promise<any> {

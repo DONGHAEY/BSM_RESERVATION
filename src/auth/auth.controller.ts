@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
@@ -40,5 +41,10 @@ export class AuthController {
     res.cookie('Authentication', '', {
       maxAge: 0,
     });
+  }
+
+  @Get('test')
+  async userFetch(@Body('usercode') usercode: number) {
+    return await this.authService.getUserByCode(usercode);
   }
 }

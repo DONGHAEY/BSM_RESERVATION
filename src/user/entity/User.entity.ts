@@ -7,12 +7,12 @@ import {
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { Level } from './Level.type';
-import { Role } from './Role.type';
+import { Level } from '../types/Level.type';
+import { Role } from '../types/Role.type';
 import { StudentInfo } from './StudentInfo.entity';
 import { TeacherInfo } from './TeacherInfo.entity';
 
-@Entity('User')
+@Entity('user')
 export class User extends BaseEntity {
   @PrimaryColumn({
     name: 'code',

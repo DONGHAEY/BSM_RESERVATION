@@ -5,13 +5,14 @@ import {
   JoinColumn,
   OneToMany,
   PrimaryColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { EntryAvailable } from './EntryAvailable.entity';
 import { RoomType } from './Room.type';
 
 @Entity('Room')
 export class Room extends BaseEntity {
-  @PrimaryColumn({
+  @PrimaryGeneratedColumn({
     name: 'code',
     type: 'int',
   })

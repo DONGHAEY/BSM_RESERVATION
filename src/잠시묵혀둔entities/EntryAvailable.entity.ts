@@ -10,6 +10,12 @@ export class EntryAvailable extends BaseEntity {
   roomCode: number;
 
   @PrimaryColumn({
+    name: 'day',
+    type: 'int',
+  })
+  day: number; //요일
+
+  @PrimaryColumn({
     name: 'open_at',
     type: 'varchar', //0800 | 08시 00분 시작시간이 겹칠 수 없기 때문에 Primary를 주었다
     length: 4,

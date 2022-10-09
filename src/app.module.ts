@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -12,19 +13,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       port: 3306,
       username: 'root',
       password: '9310',
-      database: 'bibleTrainTest',
+      database: 'bssm_reservation',
       synchronize: false,
-      entities: [
-        UserAuthority,
-        User,
-        Train,
-        TrainProfile,
-        Bible,
-        BibleTrack,
-        CheckStamp,
-      ],
+      entities: [__dirname + '/**/entity/*.entity.{js,ts}'],
       logging: true,
     }),
+    UserModule,
     AuthModule,
   ],
   controllers: [AppController],
