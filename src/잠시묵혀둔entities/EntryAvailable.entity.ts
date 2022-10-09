@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
-import { InCharge } from './InChargeType.type';
+import { InCharge } from '../user/types/InChargeType.type';
 
 @Entity('Entry_available')
 export class EntryAvailable extends BaseEntity {

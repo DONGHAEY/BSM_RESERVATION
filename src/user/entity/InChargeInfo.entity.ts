@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, JoinColumn, PrimaryColumn } from 'typeorm';
-import { InCharge } from './InChargeType.type';
+import { InCharge } from '../types/InChargeType.type';
 
 @Entity('in_charge_info')
 export class InChargeInfo extends BaseEntity {
