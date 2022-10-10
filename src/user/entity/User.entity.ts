@@ -13,6 +13,7 @@ import { Role } from '../types/Role.type';
 import { StudentInfo } from './StudentInfo.entity';
 import { TeacherInfo } from './TeacherInfo.entity';
 
+//single table pattern이라고 한다. //https://velog.io/@loakick/Nest.js-TypeORM-리팩터링-SingleTableInheritance //여기서 배웠는데 너무 좋다..
 @Entity({
   name: 'user',
 })
