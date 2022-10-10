@@ -8,11 +8,6 @@ export class UserService {
   constructor(private userRepository: UserRepository) {}
 
   async test(userCode: number) {
-    return await this.userRepository.findOne({
-      where: {
-        code: userCode,
-      },
-      relations: ['studentInfo'],
-    });
+    return await this.userRepository.getUserByCode(userCode);
   }
 }
