@@ -1,21 +1,14 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryColumn,
-} from 'typeorm';
+import { Column, ChildEntity, PrimaryColumn } from 'typeorm';
+import { Role } from '../types/Role.type';
 import { User } from './User.entity';
 
-@Entity('student_info')
-export class StudentInfo extends BaseEntity {
+@ChildEntity(Role.STUDENT)
+export class StudentInfo extends User {
   @PrimaryColumn({
-    name: 'user_code',
+    name: 'code',
     type: 'int',
   })
-  userCode: number;
-
+  code: number;
   @Column({
     name: 'enrolled_at',
     type: 'int',
