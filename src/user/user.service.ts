@@ -5,7 +5,7 @@ import { UserRepository } from './repository/User.Repository';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private userRepository: UserRepository) {}
+  constructor(private userRepository: UserRepository) {}
 
   async test(userCode: number) {
     return await this.userRepository.findOne({

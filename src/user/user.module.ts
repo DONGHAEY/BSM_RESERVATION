@@ -4,8 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entity/User.entity';
 import { StudentInfo } from './entity/StudentInfo.entity';
 import { TeacherInfo } from './entity/TeacherInfo.entity';
+import { UserRepository } from './repository/User.Repository';
+import { TypeOrmForCustomRepositoryModule } from 'src/TypeormForCustomRepository/typeormForCustomRepository.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([User, StudentInfo, TeacherInfo])],
+  imports: [
+    TypeOrmForCustomRepositoryModule.forCustomRepository([UserRepository]),
+  ],
   exports: [UserService],
   providers: [UserService],
 })
