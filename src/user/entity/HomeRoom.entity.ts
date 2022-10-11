@@ -3,19 +3,21 @@ import {
   Column,
   Entity,
   PrimaryColumn,
-  OneToOne,
-  JoinColumn,
+  ChildEntity,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
-import { TeacherInfo } from './TeacherInfo.entity';
+import { InCharge } from '../types/InChargeType.type';
+import { InChargeInfo } from './InChargeInfo.entity';
 
-@Entity()
-export class HomeRoom extends BaseEntity {
+@Entity('home_room')
+@ChildEntity(InCharge.HOMEROOM)
+export class HomeRoom extends InChargeInfo {
   // 담임 선생님의 정보 엔티티
-  @PrimaryColumn({
-    name: 'code',
+  @PrimaryGeneratedColumn({
+    name: 'in_charge_code',
     type: 'int',
   })
-  code: number; //선생님이 학교에서 반을 관리할 때, 하나의 반만 관리하기 때문에 teacher_code에만 Primary를 주었다.
+  inChargeCode: number; //선생님이 학교에서 반을 관리할 때, 하나의 반만 관리하기 때문에 teacher_code에만 Primary를 주었다.
 
   @Column({
     name: 'grade_no',
@@ -27,10 +29,4 @@ export class HomeRoom extends BaseEntity {
     type: 'int',
   })
   classNo: number; //담당 반
-
-  @OneToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.code)
-  @JoinColumn({
-    name: 'code',
-  })
-  teacher: TeacherInfo;
 }

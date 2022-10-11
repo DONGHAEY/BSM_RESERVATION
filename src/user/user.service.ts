@@ -14,19 +14,20 @@ export class UserService {
     private teacherRepository: TeacherRepository,
   ) {}
 
-  async getUserByCodeAndToken(code: number, token: string) {
+  async getUserByCodeAndToken(userCode: number, token: string) {
     return await this.userRepository.findOne({
       where: {
-        code,
+        userCode,
         oauthToken: token,
       },
     });
   }
 
-  async saveUser(user: User, token: string) {
+  async saveUser(user: any, token: string) {
     if (user.role === Role.STUDENT) {
       return await this.studentRepository.save({
         ...user,
+        userCode: user.code,
         role: Role.STUDENT,
         oauthToken: token,
       });
@@ -34,16 +35,17 @@ export class UserService {
     if (user.role === Role.TEACHER) {
       return await this.teacherRepository.save({
         ...user,
+        userCode: user.code,
         role: Role.TEACHER,
         oauthToken: token,
       });
     }
   }
 
-  async test(code: number) {
+  async test(userCode: number) {
     return await this.userRepository.findOne({
       where: {
-        code,
+        userCode,
       },
     });
   }

@@ -53,7 +53,7 @@ export class AuthService {
     const userResponse = await this.fetchUserByToken(token);
     //db에서 유저를 찾는 코드
     const userFind = await this.userService.getUserByCodeAndToken(
-      userResponse.code,
+      userResponse.userCode,
       token,
     );
     if (userFind) {

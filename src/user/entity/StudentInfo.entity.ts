@@ -5,10 +5,10 @@ import { User } from './User.entity';
 @ChildEntity(Role.STUDENT)
 export class StudentInfo extends User {
   @PrimaryColumn({
-    name: 'code',
+    name: 'user_code',
     type: 'int',
   })
-  code: number;
+  userCode: number;
 
   @Column({
     name: 'enrolled_at',

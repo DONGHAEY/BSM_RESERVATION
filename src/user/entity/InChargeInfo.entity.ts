@@ -3,21 +3,35 @@ import {
   Column,
   Entity,
   JoinColumn,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   ManyToOne,
+  TableInheritance,
 } from 'typeorm';
 import { InCharge } from '../types/InChargeType.type';
 import { TeacherInfo } from './TeacherInfo.entity';
 
 @Entity('in_charge_info')
+@TableInheritance({
+  column: {
+    type: 'enum',
+    enum: InCharge,
+    name: 'inChargeType',
+  },
+})
 export class InChargeInfo extends BaseEntity {
-  @PrimaryColumn({
-    name: 'code',
+  @PrimaryGeneratedColumn({
+    name: 'in_charge_code',
     type: 'int',
   })
-  code: number;
+  inChargeCode: number;
 
-  @PrimaryColumn({
+  @Column({
+    name: 'user_code',
+    type: 'int',
+  })
+  userCode: number;
+
+  @Column({
     name: 'in_charge_type',
     type: 'enum',
     enum: InCharge,
@@ -26,7 +40,7 @@ export class InChargeInfo extends BaseEntity {
 
   @ManyToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.inCharged)
   @JoinColumn({
-    name: 'code',
+    name: 'user_code',
   })
   teacher: TeacherInfo;
 }

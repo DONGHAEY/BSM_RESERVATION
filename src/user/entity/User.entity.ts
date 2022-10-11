@@ -26,10 +26,10 @@ import { TeacherInfo } from './TeacherInfo.entity';
 })
 export class User extends BaseEntity {
   @PrimaryColumn({
-    name: 'code',
+    name: 'user_code',
     type: 'int',
   })
-  code: number;
+  userCode: number;
 
   @Column({
     name: 'email',
