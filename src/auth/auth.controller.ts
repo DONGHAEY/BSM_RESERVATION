@@ -18,18 +18,16 @@ export class AuthController {
   @Get('login')
   async login(@Res() res, @Query('code') authcode: string) {
     console.log(authcode + ' dddd');
-    const token = await this.authService.getToken(authcode);
+    const token = await this.authService.fetchToken(authcode);
     if (!token) {
-      console.log('이거때문은 아니잖아 좀,..2');
       throw new UnauthorizedException('Authcode is invaild');
     }
-    console.log(token);
-    const user = await this.authService.getUserByToken(token);
+    const user = await this.authService.loginOrRegister(token);
+
     res.cookie('Authentication', token, {
       httpOnly: true,
       maxAge: 1000 * 60 * 60,
     });
-    console.log(user);
     return res.json({
       success: true,
       user,
@@ -41,10 +39,5 @@ export class AuthController {
     res.cookie('Authentication', '', {
       maxAge: 0,
     });
-  }
-
-  @Get('test')
-  async userFetch(@Body('usercode') usercode: number) {
-    return await this.authService.getUserByCode(usercode);
   }
 }

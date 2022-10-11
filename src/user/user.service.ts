@@ -7,7 +7,19 @@ import { UserRepository } from './repository/User.Repository';
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 
-  async test(userCode: number) {
-    return await this.userRepository.getUserByCode(userCode);
+  async getByCodeAndToken(code: number, token: string) {
+    return await this.userRepository.findOne({
+      where: {
+        code,
+        oauthToken: token,
+      },
+    });
+  }
+
+  async saveUser(user: User, token: string) {
+    return await this.userRepository.save({
+      ...user,
+      oauthToken: token,
+    });
   }
 }

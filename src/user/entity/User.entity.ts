@@ -58,6 +58,12 @@ export class User extends BaseEntity {
   level: Level;
 
   @Column({
+    name: 'oauth_token',
+    type: 'varchar',
+  })
+  oauthToken: string;
+
+  @Column({
     name: 'role',
     type: 'enum',
     enum: Role,

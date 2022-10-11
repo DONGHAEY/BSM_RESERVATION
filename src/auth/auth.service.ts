@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
+import { User } from 'src/user/entity/User.entity';
 @Injectable()
 export class AuthService {
   constructor(
@@ -14,8 +15,8 @@ export class AuthService {
   readonly GET_TOKEN_URL = 'https://auth.bssm.kro.kr/api/oauth/token';
   readonly GET_RESOURCE_URL = 'https://auth.bssm.kro.kr/api/oauth/resource';
 
-  async getToken(authCode: string): Promise<any> {
-    console.log(authCode);
+  async fetchToken(authCode: string): Promise<any> {
+    //BSM에서 authcode를 받아와 불변성 유저토큰을 받아내는 코드이다.
     try {
       const TokenRequest = await this.httpService
         .post(this.GET_TOKEN_URL, {
@@ -31,22 +32,39 @@ export class AuthService {
     }
   }
 
-  async getUserByCode(code: number) {
-    return await this.userService.test(code);
-  }
-
-  async getUserByToken(token: string): Promise<any> {
+  async fetchUserByToken(token: string): Promise<User> {
+    //BSM에서 받아온 토큰을 통해 유저를 가져오는 코드이다.
     try {
-      const userRequest = await this.httpService
+      const userResponse = await this.httpService
         .post(this.GET_RESOURCE_URL, {
           clientId: this.BSM_OAUTH_CLIENT_ID,
           clientSecret: this.BSM_OAUTH_CLIENT_SECRET,
           token,
         })
         .toPromise();
-      return userRequest.data.user || null;
+      return userResponse.data.user || null;
     } catch (e) {
       throw new UnauthorizedException();
     }
+  }
+
+  async loginOrRegister(token: string) {
+    //login 부분
+    const userResponse = await this.fetchUserByToken(token);
+    //db에서 유저를 찾는 코드
+    const userFind = await this.userService.getByCodeAndToken(
+      userResponse.code,
+      token,
+    );
+    if (userFind) {
+      return userFind;
+    }
+    //register 부분
+    const user = await this.userService.saveUser(userResponse, token);
+    return user;
+  }
+
+  async generateAccessToken(userCode: number) {
+    //jwt서비스 불러오는 곳..
   }
 }

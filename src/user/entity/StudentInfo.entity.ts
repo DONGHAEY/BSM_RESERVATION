@@ -9,6 +9,7 @@ export class StudentInfo extends User {
     type: 'int',
   })
   code: number;
+
   @Column({
     name: 'enrolled_at',
     type: 'int',

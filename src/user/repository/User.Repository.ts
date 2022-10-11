@@ -6,12 +6,4 @@ import { CustomRepository } from 'src/TypeormForCustomRepository/CustomRepositor
 import { Role } from '../types/Role.type';
 
 @CustomRepository(User)
-export class UserRepository extends Repository<User> {
-  async getUserByCode(code: number) {
-    const user = await this.findOne({
-      where: {
-        code,
-      },
-    });
-  }
-}
+export class UserRepository extends Repository<User> {}
