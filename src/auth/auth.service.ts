@@ -52,16 +52,19 @@ export class AuthService {
     //login 부분
     const userResponse = await this.fetchUserByToken(token);
     //db에서 유저를 찾는 코드
-    const userFind = await this.userService.getByCodeAndToken(
-      userResponse.code,
-      token,
-    );
+    const userFind = await this.userService.getByCode(userResponse.code);
     if (userFind) {
       return userFind;
+    } else {
+      //register 부분
+      console.log('ddd');
+      const user = await this.userService.saveUser(userResponse, token);
+      return user;
     }
-    //register 부분
-    const user = await this.userService.saveUser(userResponse, token);
-    return user;
+  }
+
+  async test(code: number) {
+    return await this.userService.getByCode(code);
   }
 
   async generateAccessToken(userCode: number) {

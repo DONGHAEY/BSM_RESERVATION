@@ -40,4 +40,9 @@ export class AuthController {
       maxAge: 0,
     });
   }
+
+  @Get('test')
+  async test(@Body('code') code: number) {
+    return await this.authService.test(code);
+  }
 }

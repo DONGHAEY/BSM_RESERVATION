@@ -6,9 +6,13 @@ import { StudentInfo } from './entity/StudentInfo.entity';
 import { TeacherInfo } from './entity/TeacherInfo.entity';
 import { UserRepository } from './repository/User.Repository';
 import { TypeOrmForCustomRepositoryModule } from 'src/TypeormForCustomRepository/typeormForCustomRepository.module';
+import { StudentRepository } from './repository/Student.repository';
 @Module({
   imports: [
-    TypeOrmForCustomRepositoryModule.forCustomRepository([UserRepository]),
+    TypeOrmForCustomRepositoryModule.forCustomRepository([
+      UserRepository,
+      StudentRepository,
+    ]),
   ],
   exports: [UserService],
   providers: [UserService],

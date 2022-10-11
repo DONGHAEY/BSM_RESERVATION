@@ -20,7 +20,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           username: configService.get('DB_USERNAME'),
           password: configService.get('DB_PASSWORD'),
           database: configService.get('DB_NAME') || 'bssm_reservation',
-          synchronize: true,
+          synchronize: false,
           entities: [__dirname + '/**/entity/*.entity.{js,ts}'],
           logging: true,
         };
