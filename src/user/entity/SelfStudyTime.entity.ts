@@ -21,13 +21,13 @@ export class SelfStudyTime extends InChargeInfo {
     name: 'grade_no',
     type: 'int',
   })
-  gradeNo: number; //담당 학년 - 자습 담당선생님은 학년별로 지정된다. 1학년, 2학년 모두 자습 담당선생님이 될 수 있기 때문에 primary를 주었다.
+  gradeNo: number; // 담당 학년
 
   @Column({
     name: 'day',
     type: 'varchar',
   })
-  day: string; // 담당 요일 - 어제 담당하셨던 자습 담당선생님이 오늘도 담당할 수 있기 때문에 primary를 주었다.
+  day: string; // 담당 요일
 
   @Column({
     name: 'date',
