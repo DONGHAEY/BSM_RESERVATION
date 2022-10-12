@@ -2,18 +2,27 @@ import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
+import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/entity/User.entity';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
   constructor(
     private httpService: HttpService,
     private userService: UserService,
+    private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
-  readonly BSM_OAUTH_CLIENT_ID = 'e8f78fa2';
-  readonly BSM_OAUTH_CLIENT_SECRET = 'b1c1feb1bec5fa28439b83f72c83856d';
-  readonly GET_TOKEN_URL = 'https://auth.bssm.kro.kr/api/oauth/token';
-  readonly GET_RESOURCE_URL = 'https://auth.bssm.kro.kr/api/oauth/resource';
+  readonly BSM_OAUTH_CLIENT_ID = this.configService.get('BSM_OAUTH_CLIENT_ID');
+  readonly BSM_OAUTH_CLIENT_SECRET = this.configService.get(
+    'BSM_OAUTH_CLIENT_SECRET',
+  );
+  readonly GET_TOKEN_URL = this.configService.get('GET_TOKEN_URL');
+  readonly GET_RESOURCE_URL = this.configService.get('GET_RESOURCE_URL');
+  readonly ACCESSTOKEN_SECRET_KEY = this.configService.get(
+    'ACCESSTOKEN_SECRET_KEY',
+  );
 
   async fetchToken(authCode: string): Promise<any> {
     //BSM에서 authcode를 받아와 불변성 유저토큰을 받아내는 코드이다.
@@ -52,17 +61,26 @@ export class AuthService {
     //login 부분
     const userResponse = await this.fetchUserByToken(token);
     //db에서 유저를 찾는 코드
-    const userFind = await this.userService.getUserByCodeAndToken(
+    let userFind = await this.userService.getUserByCodeAndToken(
       userResponse.userCode,
       token,
     );
-    if (userFind) {
-      return userFind;
-    } else {
+    if (!userFind) {
       //register 부분
-      const user = await this.userService.saveUser(userResponse, token);
-      return user;
+      userFind = await this.userService.saveUser(userResponse, token);
     }
+    const payload = {
+      userCode: userFind.userCode,
+      email: userFind.email,
+    };
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.ACCESSTOKEN_SECRET_KEY,
+      expiresIn: '1h',
+    });
+    return {
+      refreshToken,
+      user: userFind,
+    };
   }
 
   async test(userCode: number) {

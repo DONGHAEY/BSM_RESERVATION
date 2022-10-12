@@ -1,14 +1,12 @@
-// import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-// import { Reflector } from '@nestjs/core';
-// import { Observable } from 'rxjs';
+import { ExecutionContext, Injectable } from '@nestjs/common';
+import { AuthGuard as NestAuthGuard } from '@nestjs/passport';
+import { Observable } from 'rxjs';
 
-// @Injectable()
-// export class AuthGuard implements CanActivate {
-//   constructor(private readonly reflector: Reflector) {}
-//   canActivate(
-//     context: ExecutionContext,
-//   ): boolean | Promise<boolean> | Observable<boolean> {
-    
-//     const roles = this.reflector.get<string[]>('roles', context.getHandler());
-//   }
-// }
+@Injectable()
+export class AuthGuard extends NestAuthGuard('jwt') {
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    return super.canActivate(context); //true false만 반환한다
+  }
+}

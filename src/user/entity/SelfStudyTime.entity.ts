@@ -25,9 +25,9 @@ export class SelfStudyTime extends InChargeInfo {
 
   @Column({
     name: 'day',
-    type: 'varchar',
+    type: 'int',
   })
-  day: string; // 담당 요일
+  day: number; // 담당 요일
 
   @Column({
     name: 'date',

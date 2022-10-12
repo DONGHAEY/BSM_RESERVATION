@@ -54,6 +54,7 @@ export class User extends BaseEntity {
     name: 'level',
     type: 'enum',
     enum: Level,
+    default: Level.GENERAL,
   })
   level: Level;
 

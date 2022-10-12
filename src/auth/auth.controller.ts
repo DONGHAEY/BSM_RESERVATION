@@ -8,8 +8,13 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from './guards/auth.guard';
 import { AuthService } from './auth.service';
+import { GetUser } from './decorator/getUser';
+import { User } from 'src/user/entity/User.entity';
+import { ConfigService } from '@nestjs/config';
 // https://auth.bssm.kro.kr/oauth?clientId=e8f78fa2&redirectURI=http://localhost:3000/afterLogin
 @Controller('oauth')
 export class AuthController {
@@ -17,24 +22,31 @@ export class AuthController {
 
   @Get('login')
   async login(@Res() res, @Query('code') authcode: string) {
-    console.log(authcode + ' dddd');
     const token = await this.authService.fetchToken(authcode);
     if (!token) {
       throw new UnauthorizedException('Authcode is invaild');
     }
-    const user = await this.authService.loginOrRegister(token);
-
-    res.cookie('Authentication', token, {
+    const logined = await this.authService.loginOrRegister(token);
+    res.cookie('Authentication', logined.refreshToken, {
       httpOnly: true,
       maxAge: 1000 * 60 * 60,
     });
     return res.json({
-      success: true,
-      user,
+      user: logined.user,
     });
   }
 
+  @UseGuards(AuthGuard)
+  @Get('Authenticate')
+  async authenticate(@GetUser() user: User) {
+    return {
+      success: true,
+      user,
+    };
+  }
+
   @Get('logout')
+  @UseGuards(AuthGuard)
   async logout(@Res() res) {
     res.cookie('Authentication', '', {
       maxAge: 0,
