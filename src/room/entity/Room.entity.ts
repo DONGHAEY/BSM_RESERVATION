@@ -10,7 +10,7 @@ import {
 import { EntryAvailable } from './EntryAvailable.entity';
 import { RoomType } from './Room.type';
 
-@Entity('Room')
+@Entity('room')
 export class Room extends BaseEntity {
   @PrimaryGeneratedColumn({
     name: 'code',
@@ -33,8 +33,11 @@ export class Room extends BaseEntity {
 
   @OneToMany(
     (type) => EntryAvailable,
-    (entryAvailable) => entryAvailable.roomCode,
+    (entryAvailable) => entryAvailable.room,
+    {
+      eager: true,
+      cascade: true,
+    },
   )
-  @JoinColumn({ name: 'code' })
   entryAvailable: EntryAvailable[];
 }

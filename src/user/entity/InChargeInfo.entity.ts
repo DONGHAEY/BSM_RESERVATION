@@ -7,7 +7,7 @@ import {
   ManyToOne,
   TableInheritance,
 } from 'typeorm';
-import { InCharge } from '../types/InChargeType.type';
+import { InCharge } from '../types/InCharge.type';
 import { TeacherInfo } from './TeacherInfo.entity';
 
 @Entity('in_charge_info')

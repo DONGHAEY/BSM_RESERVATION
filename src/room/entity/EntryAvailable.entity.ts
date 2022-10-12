@@ -1,13 +1,27 @@
-import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
-import { InCharge } from '../user/types/InChargeType.type';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  PrimaryColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { InCharge } from 'src/user/types/InCharge.type';
+import { Room } from './Room.entity';
 
-@Entity('Entry_available')
+@Entity('entry_available')
 export class EntryAvailable extends BaseEntity {
   @PrimaryColumn({
     name: 'room_code',
     type: 'int',
   })
   roomCode: number;
+
+  @ManyToOne((type) => Room, (room) => room.entryAvailable, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'room_code' })
+  room: Room;
 
   @PrimaryColumn({
     name: 'day',

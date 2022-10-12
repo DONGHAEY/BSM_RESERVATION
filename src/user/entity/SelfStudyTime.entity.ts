@@ -4,14 +4,15 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   ChildEntity,
+  PrimaryColumn,
 } from 'typeorm';
-import { InCharge } from '../types/InChargeType.type';
+import { InCharge } from '../types/InCharge.type';
 import { InChargeInfo } from './InChargeInfo.entity';
 @Entity('self_study_time')
 @ChildEntity(InCharge.SELFSTUDYTIME)
 export class SelfStudyTime extends InChargeInfo {
   // 자습시간 담당선생님의 정보 엔티티
-  @PrimaryGeneratedColumn({
+  @PrimaryColumn({
     name: 'in_charge_code',
     type: 'int',
   })
