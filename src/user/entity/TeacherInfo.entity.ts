@@ -24,6 +24,7 @@ export class TeacherInfo extends User {
 
   @OneToMany((type) => InChargeInfo, (inChargeInfo) => inChargeInfo.teacher, {
     eager: true,
+    cascade: true,
   })
   inCharged: InChargeInfo[];
 }

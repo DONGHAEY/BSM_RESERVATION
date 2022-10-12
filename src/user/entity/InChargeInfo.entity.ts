@@ -38,7 +38,9 @@ export class InChargeInfo extends BaseEntity {
   })
   inChargeType: InCharge;
 
-  @ManyToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.inCharged)
+  @ManyToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.inCharged, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'user_code',
   })
