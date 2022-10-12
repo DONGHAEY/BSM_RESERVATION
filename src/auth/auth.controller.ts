@@ -53,8 +53,8 @@ export class AuthController {
     });
   }
 
-  @Get('test')
+  @Get('testForFindUserByCode')
   async test(@Body('code') code: number) {
-    return await this.authService.test(code);
+    return await this.authService.testForFindUserByCode(code);
   }
 }

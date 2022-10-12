@@ -43,7 +43,7 @@ export class UserService {
     }
   }
 
-  async test(userCode: number) {
+  async testForFindUserByCode(userCode: number) {
     return await this.userRepository.findOne({
       where: {
         userCode,

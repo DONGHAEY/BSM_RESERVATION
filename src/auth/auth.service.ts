@@ -69,25 +69,25 @@ export class AuthService {
       //register 부분
       userFind = await this.userService.saveUser(userResponse, token);
     }
-    const payload = {
-      userCode: userFind.userCode,
-      email: userFind.email,
-    };
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: this.ACCESSTOKEN_SECRET_KEY,
-      expiresIn: '1h',
-    });
+    const refreshToken = this.generateAccessToken(userFind);
     return {
       refreshToken,
       user: userFind,
     };
   }
 
-  async test(userCode: number) {
-    return await this.userService.test(userCode);
+  async testForFindUserByCode(userCode: number) {
+    return await this.userService.testForFindUserByCode(userCode);
   }
 
-  async generateAccessToken(userCode: number) {
-    //jwt서비스 불러오는 곳..
+  async generateAccessToken(user: User) {
+    const payload = {
+      userCode: user.userCode,
+      email: user.email,
+    };
+    return this.jwtService.sign(payload, {
+      secret: this.ACCESSTOKEN_SECRET_KEY,
+      expiresIn: '1h',
+    });
   }
 }
