@@ -69,9 +69,10 @@ export class AuthService {
       //register 부분
       userFind = await this.userService.saveUser(userResponse, token);
     }
-    const refreshToken = this.generateAccessToken(userFind);
+    const accessToken = await this.generateAccessToken(userFind);
+    console.log(accessToken);
     return {
-      refreshToken,
+      accessToken,
       user: userFind,
     };
   }

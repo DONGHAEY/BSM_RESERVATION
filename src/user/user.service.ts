@@ -24,7 +24,6 @@ export class UserService {
   }
 
   async saveUser(user: any, token: string) {
-    console.log(user);
     if (user.role === Role.STUDENT) {
       return await this.studentRepository.save({
         ...user,

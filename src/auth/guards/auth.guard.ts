@@ -7,6 +7,7 @@ export class AuthGuard extends NestAuthGuard('jwt') {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    return super.canActivate(context); //true false만 반환한다
+    console.log(context);
+    return super.canActivate(context);
   }
 }

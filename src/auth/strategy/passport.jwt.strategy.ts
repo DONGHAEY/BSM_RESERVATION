@@ -8,17 +8,14 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(
-    private userService: UserService,
-    private configService: ConfigService,
-  ) {
+  constructor(private userService: UserService) {
     super({
       // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: Request) => request.cookies.accessToken,
+        (request: Request) => request.cookies.Authentication,
       ]),
       ignoreExpiration: false, //만료기한을 무시할것인가
-      secretOrKey: configService.get('ACCESSTOKEN_SECRET_KEY'),
+      secretOrKey: process.env.ACCESSTOKEN_SECRET_KEY,
     });
   }
 

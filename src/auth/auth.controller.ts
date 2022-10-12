@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from './guards/auth.guard';
 import { AuthService } from './auth.service';
-import { GetUser } from './decorator/getUser';
+import { GetUser } from './decorator/getUser.decorator';
 import { User } from 'src/user/entity/User.entity';
 import { ConfigService } from '@nestjs/config';
 // https://auth.bssm.kro.kr/oauth?clientId=e8f78fa2&redirectURI=http://localhost:3000/afterLogin
@@ -27,13 +27,11 @@ export class AuthController {
       throw new UnauthorizedException('Authcode is invaild');
     }
     const logined = await this.authService.loginOrRegister(token);
-    res.cookie('Authentication', logined.refreshToken, {
+    res.cookie('Authentication', logined.accessToken, {
       httpOnly: true,
       maxAge: 1000 * 60 * 60,
     });
-    return res.json({
-      user: logined.user,
-    });
+    return res.json(logined);
   }
 
   @UseGuards(AuthGuard)
@@ -41,7 +39,7 @@ export class AuthController {
   async authenticate(@GetUser() user: User) {
     return {
       success: true,
-      user,
+      user: user,
     };
   }
 
@@ -55,6 +53,7 @@ export class AuthController {
 
   @Get('testForFindUserByCode')
   async test(@Body('code') code: number) {
+    console.log(process.env.ACCESSTOKEN_SECRET_KEY);
     return await this.authService.testForFindUserByCode(code);
   }
 }

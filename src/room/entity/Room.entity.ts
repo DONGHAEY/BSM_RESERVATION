@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { EntryAvailable } from './EntryAvailable.entity';
-import { RoomType } from './Room.type';
+import { RoomType } from '../type/Room.type';
 
 @Entity('room')
 export class Room extends BaseEntity {
