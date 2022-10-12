@@ -12,7 +12,7 @@ import { InChargeInfo } from './InChargeInfo.entity';
 @ChildEntity(InCharge.SELFSTUDYTIME)
 export class SelfStudyTime extends InChargeInfo {
   // 자습시간 담당선생님의 정보 엔티티
-  @PrimaryColumn({
+  @PrimaryGeneratedColumn({
     name: 'in_charge_code',
     type: 'int',
   })
