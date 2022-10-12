@@ -28,8 +28,12 @@ const AfterLogin = () => {
       let code = query.get("code");
       try {
         const userResponse = await axios.get(`/api/oauth/login?code=${code}`);
-        console.log(userResponse.data.user);
-        setUser({ ...userResponse.data.user, isLogin: true });
+        console.log(userResponse.data);
+        setUser({
+          ...userResponse.data.user,
+          isLogin: true,
+          accessToken: userResponse.data.accessToken,
+        });
         localStorage.setItem(
           "userInfo",
           JSON.stringify(userResponse.data.user)
