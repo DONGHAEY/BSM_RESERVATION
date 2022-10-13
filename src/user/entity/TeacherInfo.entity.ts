@@ -1,3 +1,4 @@
+import { RequestInfo } from 'src/room/entity/RequestInfo.entity';
 import {
   BaseEntity,
   Column,
@@ -27,4 +28,7 @@ export class TeacherInfo extends User {
     cascade: true,
   })
   inCharged: InChargeInfo[];
+
+  @OneToMany((type) => RequestInfo, (requestInfo) => requestInfo.teacherInfo)
+  responseInfo: RequestInfo[];
 }

@@ -7,7 +7,7 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
-import { RequestInfo } from './RequestInfo';
+import { RequestInfo } from './RequestInfo.entity';
 
 @Entity('request_member')
 export class RequestMember extends BaseEntity {
@@ -34,6 +34,7 @@ export class RequestMember extends BaseEntity {
   @ManyToOne((type) => RequestInfo, (requestInfo) => requestInfo.requestMembers)
   @JoinColumn({
     name: 'request_code',
+    referencedColumnName: 'requestCode',
   })
   requestInfo: RequestInfo;
 }

@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { InCharge } from 'src/user/types/InCharge.type';
 import { Room } from './Room.entity';
-import { RequestInfo } from './RequestInfo';
+import { RequestInfo } from './RequestInfo.entity';
 
 @Entity('entry_available')
 export class EntryAvailable extends BaseEntity {

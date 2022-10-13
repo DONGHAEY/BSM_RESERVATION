@@ -12,11 +12,13 @@ import {
   OneToMany,
 } from 'typeorm';
 import { EntryAvailable } from './EntryAvailable.entity';
-import { RequestMember } from './RequestMember';
+import { RequestMember } from './RequestMember.entity';
 
 @Entity('request_info')
 export class RequestInfo extends BaseEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({
+    name: 'request_code',
+  })
   requestCode: number;
 
   /*/ ********* Entry Available Entity의 Primary Keys ********* /*/
@@ -48,7 +50,6 @@ export class RequestInfo extends BaseEntity {
     (entryAvailable) => entryAvailable.requestInfoList,
     {
       onDelete: 'CASCADE',
-      eager: true, // 하나의 입장가능정보를 들고오는것이다, 그래서 eager를 허용하였다.
     },
   )
   @JoinColumn([
@@ -61,7 +62,7 @@ export class RequestInfo extends BaseEntity {
 
   @PrimaryColumn({
     name: 'request_at',
-    type: 'datetime2',
+    type: 'datetime',
   })
   requestWhen: Date; //언제 요청했는지
 
@@ -71,8 +72,8 @@ export class RequestInfo extends BaseEntity {
   })
   teacherUserCode: number; //요청받는 선생님의 유저 코드이다.
 
-  @OneToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.userCode)
-  @JoinColumn({ name: 'teacher_user_code' })
+  @OneToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.responseInfo)
+  @JoinColumn({ name: 'teacher_user_code', referencedColumnName: 'userCode' })
   teacherInfo: TeacherInfo;
 
   @OneToMany(
