@@ -4,12 +4,14 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   ChildEntity,
-  PrimaryColumn,
+  Unique,
+  Index,
 } from 'typeorm';
 import { InCharge } from '../types/InCharge.type';
 import { InChargeInfo } from './InChargeInfo.entity';
 @Entity('self_study_time')
 @ChildEntity(InCharge.SELFSTUDYTIME)
+@Index(['gradeNo', 'day'], { unique: true })
 export class SelfStudyTime extends InChargeInfo {
   // 자습시간 담당선생님의 정보 엔티티
   @PrimaryGeneratedColumn({
