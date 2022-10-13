@@ -5,9 +5,11 @@ import {
   PrimaryColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { InCharge } from 'src/user/types/InCharge.type';
 import { Room } from './Room.entity';
+import { RequestInfo } from './RequestInfo';
 
 @Entity('entry_available')
 export class EntryAvailable extends BaseEntity {
@@ -61,4 +63,14 @@ export class EntryAvailable extends BaseEntity {
     enum: InCharge,
   })
   reqTo: InCharge; //아침시간, 점심시간, 저녁자습시간, 저녁 기숙사시간에 따라, 요청 해야 하는 선생님이 달라지기 때문에 이 Column을 추가
+
+  @OneToMany(
+    (type) => RequestInfo,
+    (requestInfo) => requestInfo.entryAvailableInfo,
+    {
+      cascade: true,
+      lazy: true, //요청 했던 정보들이 100개 200개가 넘어갈 수 있기 때문에 LAZY를 사용하기로 하였다.
+    },
+  )
+  requestInfoList: RequestInfo[];
 }

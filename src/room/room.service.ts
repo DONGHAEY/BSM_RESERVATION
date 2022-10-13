@@ -11,8 +11,13 @@ export class RoomService {
     private roomRepository: RoomRepository,
     private entryAvailableRepository: EntryAvailableRepository,
   ) {}
-  async createRoom(roomType: RoomType, roomName: string): Promise<Room> {
+  async createRoom(
+    roomCode: number,
+    roomType: RoomType,
+    roomName: string,
+  ): Promise<Room> {
     return await this.roomRepository.save({
+      roomCode,
       roomName,
       roomType,
     });

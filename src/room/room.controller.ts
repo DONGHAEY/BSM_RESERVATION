@@ -30,8 +30,9 @@ export class RoomController {
     @GetUser() user: User,
     @Body('roomName') roomName: string,
     @Body('roomType') roomType: RoomType,
+    @Body('roomCode') roomCode: number,
   ) {
-    return await this.roomService.createRoom(roomType, roomName);
+    return await this.roomService.createRoom(roomCode, roomType, roomName);
   }
 
   @Post('/:roomCode/addAvailableEntryInfo')
