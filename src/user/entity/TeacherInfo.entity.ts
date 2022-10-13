@@ -30,5 +30,5 @@ export class TeacherInfo extends User {
   inCharged: InChargeInfo[];
 
   @OneToMany((type) => RequestInfo, (requestInfo) => requestInfo.teacherInfo)
-  responseInfo: RequestInfo[];
+  resquestList: RequestInfo[];
 }

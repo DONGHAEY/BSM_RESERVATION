@@ -72,7 +72,7 @@ export class RequestInfo extends BaseEntity {
   })
   teacherUserCode: number; //요청받는 선생님의 유저 코드이다.
 
-  @OneToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.responseInfo)
+  @OneToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.resquestList)
   @JoinColumn({ name: 'teacher_user_code', referencedColumnName: 'userCode' })
   teacherInfo: TeacherInfo;
 
