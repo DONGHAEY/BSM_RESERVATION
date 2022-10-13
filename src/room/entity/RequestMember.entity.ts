@@ -23,7 +23,7 @@ export class RequestMember extends BaseEntity {
   })
   userCode: number;
 
-  @OneToOne((type) => StudentInfo, (studentInfo) => studentInfo.userCode, {
+  @ManyToOne((type) => StudentInfo, (studentInfo) => studentInfo.requestList, {
     eager: true,
   })
   @JoinColumn({
