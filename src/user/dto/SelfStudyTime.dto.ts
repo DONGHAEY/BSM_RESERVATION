@@ -1,4 +1,4 @@
-import { IsEmpty, IsNotEmpty } from 'class-validator';
+import { IsEmpty, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class SelfStudyTimeDto {
   @IsNotEmpty()
@@ -7,6 +7,6 @@ export class SelfStudyTimeDto {
   grade: number;
   @IsNotEmpty()
   day: number;
-  @IsEmpty()
+  @IsOptional()
   date: Date;
 }
