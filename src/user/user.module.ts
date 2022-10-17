@@ -6,17 +6,21 @@ import { StudentInfo } from './entity/StudentInfo.entity';
 import { TeacherInfo } from './entity/TeacherInfo.entity';
 import { UserRepository } from './repository/User.Repository';
 import { TypeOrmForCustomRepositoryModule } from 'src/TypeormForCustomRepository/typeormForCustomRepository.module';
-import { StudentRepository } from './repository/Student.repository';
-import { TeacherRepository } from './repository/Teacher.repository';
-import { SelfStudyTimeRepository } from './repository/SelfStudyTime.repository';
 import { UserController } from './user.controller';
+import { InChargeInfoRepository } from './repository/InchargeInfo.repository';
+import { SelfStudyTime } from './entity/SelfStudyTime.entity';
+import { HomeRoom } from './entity/HomeRoom.entity';
 @Module({
   imports: [
     TypeOrmForCustomRepositoryModule.forCustomRepository([
       UserRepository,
-      StudentRepository,
-      TeacherRepository,
-      SelfStudyTimeRepository,
+      InChargeInfoRepository,
+    ]),
+    TypeOrmModule.forFeature([
+      SelfStudyTime,
+      HomeRoom,
+      StudentInfo,
+      TeacherInfo,
     ]),
   ],
   exports: [UserService],

@@ -1,37 +1,55 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Levels } from 'src/auth/decorator/level.decorator';
-import { Roles } from 'src/auth/decorator/roles.decorator';
+import { HomeRoomDto } from './dto/HomeRoom.dto';
 import { SelfStudyTimeDto } from './dto/SelfStudyTime.dto';
-import { User } from './entity/User.entity';
-import { SelfStudyTimeRepository } from './repository/SelfStudyTime.repository';
-import { StudentRepository } from './repository/Student.repository';
-import { TeacherRepository } from './repository/Teacher.repository';
+import { HomeRoom } from './entity/HomeRoom.entity';
+import { InChargeInfo } from './entity/InChargeInfo.entity';
+import { SelfStudyTime } from './entity/SelfStudyTime.entity';
+import { StudentInfo } from './entity/StudentInfo.entity';
+import { TeacherInfo } from './entity/TeacherInfo.entity';
+import { InChargeInfoRepository } from './repository/InchargeInfo.repository';
 import { UserRepository } from './repository/User.Repository';
 import { InCharge } from './types/InCharge.type';
 import { Level } from './types/Level.type';
 import { Role } from './types/Role.type';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
     private userRepository: UserRepository,
-    private studentRepository: StudentRepository,
-    private teacherRepository: TeacherRepository,
-    private selfStudyTimeRepository: SelfStudyTimeRepository,
+    private inChargeInfoRepository: InChargeInfoRepository,
+    @InjectRepository(StudentInfo)
+    private studentRepository: Repository<StudentInfo>,
+    @InjectRepository(TeacherInfo)
+    private teacherRepository: Repository<TeacherInfo>,
+    @InjectRepository(SelfStudyTime)
+    private selfStudyTimeRepository: Repository<SelfStudyTime>,
+    @InjectRepository(HomeRoom)
+    private homeRoomRepository: Repository<HomeRoom>,
   ) {}
 
   async setInchargeOfSelfStudyTime(
     userCode: number,
-    selfStudyTime: SelfStudyTimeDto,
-  ) {
+    selfStudyTimeDto: SelfStudyTimeDto,
+  ): Promise<void> {
     await this.selfStudyTimeRepository.save({
-      ...selfStudyTime,
       userCode,
+      ...selfStudyTimeDto,
     });
   }
 
-  async getUserByCodeAndToken(userCode: number, token: string) {
+  async setInChargeOfHomeRoom(
+    userCode: number,
+    homeRoomDto: HomeRoomDto,
+  ): Promise<void> {
+    await this.homeRoomRepository.save({
+      userCode,
+      ...homeRoomDto,
+    });
+  }
+
+  async getUserByCodeAndToken(userCode: number, token: string): Promise<any> {
     return await this.userRepository.findOne({
       where: {
         userCode,
@@ -40,7 +58,7 @@ export class UserService {
     });
   }
 
-  async saveUser(user: any, token: string) {
+  async saveUser(user: any, token: string): Promise<void> {
     if (user.role === Role.STUDENT) {
       return await this.studentRepository.save({
         ...user,
@@ -59,7 +77,7 @@ export class UserService {
     }
   }
 
-  async testForFindUserByCode(userCode: number) {
+  async testForFindUserByCode(userCode: number): Promise<any> {
     return await this.userRepository.findOne({
       where: {
         userCode,
