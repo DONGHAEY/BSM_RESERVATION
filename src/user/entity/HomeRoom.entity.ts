@@ -22,13 +22,6 @@ export class HomeRoom extends InChargeInfo {
   inChargeCode: number;
 
   @Column({
-    name: 'user_code',
-    type: 'int',
-    unique: true,
-  })
-  userCode: number;
-
-  @Column({
     name: 'grade_no',
     type: 'int',
   })

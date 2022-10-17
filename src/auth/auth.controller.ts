@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Redirect,
@@ -15,6 +16,7 @@ import { AuthService } from './auth.service';
 import { GetUser } from './decorator/getUser.decorator';
 import { User } from 'src/user/entity/User.entity';
 import { ConfigService } from '@nestjs/config';
+import { SelfStudyTimeDto } from 'src/user/dto/SelfStudyTime.dto';
 // https://auth.bssm.kro.kr/oauth?clientId=e8f78fa2&redirectURI=http://localhost:3000/afterLogin
 @Controller('oauth')
 export class AuthController {
