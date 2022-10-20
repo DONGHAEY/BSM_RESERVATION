@@ -1,40 +1,22 @@
-import logo from "./logo.svg";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Main from "./components/Main/Main";
-import {
-  RecoilRoot,
-  atom,
-  selector,
-  useRecoilState,
-  useRecoilValue,
-} from "recoil";
+import { useRecoilState } from "recoil";
 import { useEffect } from "react";
 import { userState } from "./store/user";
-import axios, { AxiosError } from "axios";
 import ServicePage from "./components/Service/Service";
+import getUser from "./api/getUser";
 
 function App() {
   const [user, setUser] = useRecoilState(userState);
 
   useEffect(() => {
     (async () => {
-      try {
-        setUser({
-          ...(await getUserInfo()).data,
-          isLogin: true,
-        });
-      } catch (error) {
-        if (error.response?.status === 401) {
-          setUser((prev) => ({ ...prev, isLogin: false }));
-        }
+      if (!user.isLogin) {
+        setUser({ ...(await getUser()) });
       }
     })();
   }, []);
-
-  const getUserInfo = () => {
-    return axios.get("/api/user", { withCredentials: true });
-  };
 
   return (
     <div className="App">

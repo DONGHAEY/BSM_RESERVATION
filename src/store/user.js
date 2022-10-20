@@ -7,12 +7,11 @@ import {
   useSetRecoilState,
 } from "recoil";
 
-const user = {
-  isLogin: false,
-};
-// localStorage.getItem("userInfo")
-//   ? JSON.parse(localStorage.getItem("userInfo"))
-//   : null;
+const user = localStorage.getItem("userInfo")
+  ? JSON.parse(localStorage.getItem("userInfo"))
+  : {
+      isLogin: false,
+    };
 
 const userState = atom({
   key: "userState",
