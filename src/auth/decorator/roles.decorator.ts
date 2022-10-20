@@ -1,6 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
-import { Role } from 'src/user/types/Role.type';
+import { BsmOauthUserRole } from 'bsm-oauth';
 
-export const Roles = (...roles: Role[]): any => {
+export const Roles = (...roles: BsmOauthUserRole[]): any => {
   return SetMetadata('roles', roles);
 };

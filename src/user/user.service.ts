@@ -16,6 +16,11 @@ import { User } from './entity/User.entity';
 import { StudentSignUpRequest } from './dto/StudentSignUpRequest.dto';
 import { TeacherSignUpRequest } from './dto/TeacherSignUp.dto';
 import { UserSignUpRequest } from './dto/UserSignUpRequest.dto';
+import BsmOauth, {
+  BsmOauthUserRole,
+  StudentResource,
+  TeacherResource,
+} from 'bsm-oauth';
 
 @Injectable()
 export class UserService {
@@ -37,22 +42,33 @@ export class UserService {
     });
   }
 
-  // async saveUser<T>(user : T) {
-  //   if (user.role === Role.STUDENT) {
-  //     await this.studentRepository.save({
-  //       ...user,
-  //       userCode: user.userCode,
-  //       role: Role.STUDENT
-  //     });
-  //   }
-  //   if (user.role === Role.TEACHER) {
-  //     return await this.teacherRepository.save({
-  //       ...user,
-  //       userCode: user.code,
-  //       role: Role.TEACHER
-  //     });
-  //   }
-  // }
+  async saveUser(user: StudentResource | TeacherResource) {
+    const userInfo = {
+      userCode: user.userCode,
+      email: user.email,
+      nickname: user.nickname,
+    };
+    if (user.role === BsmOauthUserRole.STUDENT) {
+      const studentInfo: any = {
+        ...userInfo,
+        name: user.student.name,
+        classNo: user.student.classNo,
+        grade: user.student.grade,
+        studentNo: user.student.studentNo,
+        enrolledAt: user.student.enrolledAt,
+        role: BsmOauthUserRole.STUDENT,
+      };
+      return await StudentInfo.save({ ...studentInfo });
+    }
+    if (user.role === BsmOauthUserRole.TEACHER) {
+      const teacherInfo: any = {
+        ...userInfo,
+        name: user.teacher.name,
+        role: BsmOauthUserRole.TEACHER,
+      };
+      return await TeacherInfo.save({ ...teacherInfo });
+    }
+  }
 
   // async testForFindUserByCode(userCode: number): Promise<any> {
   //   return await this.userRepository.findOne({

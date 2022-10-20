@@ -5,5 +5,4 @@ export interface UserSignUpRequest {
   readonly nickname: string;
   readonly name: string;
   readonly email: string;
-  readonly level?: number;
 }

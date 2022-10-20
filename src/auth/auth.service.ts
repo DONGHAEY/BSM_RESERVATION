@@ -18,16 +18,11 @@ import BsmOauth, {
   StudentResource,
   TeacherResource,
 } from 'bsm-oauth';
-import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
-import { StudentSignUpRequest } from 'src/user/dto/StudentSignUpRequest.dto';
-import { TeacherSignUpRequest } from 'src/user/dto/TeacherSignUp.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private httpService: HttpService,
     private userService: UserService,
     private jwtService: JwtService,
-    private configService: ConfigService,
   ) {
     this.bsmOauth = new BsmOauth(
       process.env.BSM_OAUTH_CLIENT_ID,
@@ -59,18 +54,21 @@ export class AuthService {
       }
       throw new InternalServerErrorException('OAuth Failed');
     }
+
     let userInfo = await this.userService.getUserBycode(resource.userCode);
 
     if (!userInfo) {
       // 유저를 저장한다.
-      // await this.userService.saveUser(resource);
-      // userInfo = await this.userService.getUserBycode(resource.userCode);
+      await this.userService.saveUser(resource);
+      userInfo = await this.userService.getUserBycode(resource.userCode);
       if (!userInfo) {
         throw new NotFoundException('User not Found');
       }
     }
+    console.log(userInfo);
+
     await this.login(res, userInfo);
-    res.redirect('http://localhost:3001/calendar');
+    res.redirect('http://localhost:3000/');
   }
 
   async login(res: Response, userInfo: User) {}
