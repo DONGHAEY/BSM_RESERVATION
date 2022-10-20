@@ -11,7 +11,6 @@ import { useEffect } from "react";
 import axios from "axios";
 const Main = () => {
   const [user, setUser] = useRecoilState(userState);
-  useEffect(() => {}, []);
 
   const teacherInfo =
     user.role === "TEACHER" &&
@@ -44,7 +43,7 @@ const Main = () => {
         </div>
       )}
       <a
-        href="https://auth.bssm.kro.kr/oauth?clientId=e8f78fa2&redirectURI=http://localhost:3000/afterLogin"
+        href="https://auth.bssm.kro.kr/oauth?clientId=c53c85eb&redirectURI=http://localhost/api/oauth/bsm"
         class="button accent"
       >
         BSM 계정으로 계속

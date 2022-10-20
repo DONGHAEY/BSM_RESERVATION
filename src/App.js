@@ -10,18 +10,39 @@ import {
   useRecoilState,
   useRecoilValue,
 } from "recoil";
+import { useEffect } from "react";
+import { userState } from "./store/user";
+import axios, { AxiosError } from "axios";
 
 function App() {
+  const [user, setUser] = useRecoilState(userState);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setUser({
+          ...(await getUserInfo()).data,
+          isLogin: true,
+        });
+      } catch (error) {
+        if (error.response?.status === 401) {
+          setUser((prev) => ({ ...prev, isLogin: false }));
+        }
+      }
+    })();
+  }, []);
+
+  const getUserInfo = () => {
+    return axios.get("/api/user", { withCredentials: true });
+  };
+
   return (
     <div className="App">
-      <RecoilRoot>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Main />} />
-            <Route path="/afterLogin" element={<AfterLogin />} />
-          </Routes>
-        </BrowserRouter>
-      </RecoilRoot>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Main />} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
