@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StudentInfo } from './entity/StudentInfo.entity';
 import { TeacherInfo } from './entity/TeacherInfo.entity';
@@ -11,6 +16,13 @@ import BsmOauth, {
   TeacherResource,
 } from 'bsm-oauth';
 import { Level } from './types/Level.type';
+import { HomeRoomDto } from './dto/HomeRoom.dto';
+import { DormitoryDto } from './dto/Dormitory.dto';
+import { SelfStudyTimeDto } from './dto/SelfStudyTime.dto';
+import { InCharge } from './types/InCharge.type';
+import { HomeRoom } from './entity/HomeRoom.entity';
+import { SelfStudyTime } from './entity/SelfStudyTime.entity';
+import { InChargeInfo } from './entity/InChargeInfo.entity';
 
 @Injectable()
 export class UserService {
@@ -20,16 +32,22 @@ export class UserService {
     private studentRepository: Repository<StudentInfo>,
     @InjectRepository(TeacherInfo)
     private teacherRepository: Repository<TeacherInfo>,
+    @InjectRepository(HomeRoomDto)
+    private homeRoomRepository: Repository<HomeRoom>,
+    @InjectRepository(SelfStudyTime)
+    private selfStudyTimeRepository: Repository<SelfStudyTime>,
+    @InjectRepository(InChargeInfo)
+    private inchargeInfoRepository: Repository<InChargeInfo>,
   ) {}
 
   async changeUserLevel(userCode: number, level: Level) {
     const isExist = await this.checkExist(userCode);
     if (!isExist) {
       throw new NotFoundException(
-        'User has that userCode is Not Founded to change that user',
+        `User has ${userCode} userCode is Not Founded to change that user`,
       );
     }
-    this.userRepository.update(
+    await this.userRepository.update(
       {
         userCode,
       },
@@ -37,6 +55,40 @@ export class UserService {
         level,
       },
     );
+  }
+
+  async addInchargeInfo(
+    userCode: number,
+    dto: HomeRoomDto | DormitoryDto | SelfStudyTimeDto,
+  ) {
+    const isExist = await this.checkExist(userCode);
+    if (!isExist) {
+      throw new NotFoundException(
+        `User has ${userCode} userCode is Not Founded to addInchargeInfo that user`,
+      );
+    }
+    const user = await this.userRepository.findOne({
+      where: {
+        userCode,
+      },
+    });
+    const isTeacher = await this.checkRole(user, BsmOauthUserRole.TEACHER);
+    if (!isTeacher) {
+      throw new HttpException(
+        `User has ${userCode} doesn't have Teacher Role`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    //INCHARGE TYPE 에 따라 다르게 저장해야한다
+    if (dto.incharge === InCharge.DORMITORY) {
+      await this.inchargeInfoRepository.save({ ...dto, userCode });
+    }
+    if (dto.incharge === InCharge.HOMEROOM) {
+      await this.homeRoomRepository.save({ ...dto, userCode });
+    }
+    if (dto.incharge === InCharge.SELFSTUDYTIME) {
+      await this.selfStudyTimeRepository.save({ ...dto, userCode });
+    }
   }
 
   async getUserBycode(
@@ -83,5 +135,15 @@ export class UserService {
     if (findUser) {
       return true;
     } else false;
+  }
+
+  private async checkRole(
+    user: User,
+    role: BsmOauthUserRole,
+  ): Promise<boolean> {
+    if (user.role === role) {
+      return true;
+    }
+    return false;
   }
 }
