@@ -32,7 +32,7 @@ export class UserService {
     private studentRepository: Repository<StudentInfo>,
     @InjectRepository(TeacherInfo)
     private teacherRepository: Repository<TeacherInfo>,
-    @InjectRepository(HomeRoomDto)
+    @InjectRepository(HomeRoom)
     private homeRoomRepository: Repository<HomeRoom>,
     @InjectRepository(SelfStudyTime)
     private selfStudyTimeRepository: Repository<SelfStudyTime>,
