@@ -35,11 +35,11 @@ export class AuthService {
   private bsmOauth: BsmOauth;
 
   async oauthBsm(res: Response, authCode: string) {
+    let userToken: string;
     let resource: StudentResource | TeacherResource;
     try {
-      resource = await this.bsmOauth.getResource(
-        await this.bsmOauth.getToken(authCode),
-      );
+      (userToken = await this.bsmOauth.getToken(authCode)),
+        (resource = await this.bsmOauth.getResource(userToken));
     } catch (error) {
       if (error instanceof BsmOauthError) {
         switch (error.type) {
@@ -61,7 +61,7 @@ export class AuthService {
 
     if (!userInfo) {
       // 유저를 저장한다.
-      await this.userService.saveUser(resource);
+      await this.userService.saveUser(resource, userToken);
       userInfo = await this.userService.getUserBycode(resource.userCode);
       if (!userInfo) {
         throw new NotFoundException('User not Found');

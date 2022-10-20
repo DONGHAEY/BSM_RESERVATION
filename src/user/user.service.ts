@@ -31,11 +31,12 @@ export class UserService {
     });
   }
 
-  async saveUser(user: StudentResource | TeacherResource) {
+  async saveUser(user: StudentResource | TeacherResource, userToken: string) {
     const userInfo = {
       userCode: user.userCode,
       email: user.email,
       nickname: user.nickname,
+      token: userToken,
     };
     if (user.role === BsmOauthUserRole.STUDENT) {
       const studentInfo: any = {

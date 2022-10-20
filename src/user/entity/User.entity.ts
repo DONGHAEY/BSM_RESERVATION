@@ -54,6 +54,11 @@ export class User extends BaseEntity {
   level: Level;
 
   @Column({
+    name: 'token',
+  })
+  token: string;
+
+  @Column({
     name: 'role',
     type: 'enum',
     enum: BsmOauthUserRole,
