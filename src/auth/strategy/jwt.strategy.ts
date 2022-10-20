@@ -49,7 +49,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
     const passedTime = new Date().getTime() - tokenInfo.createdAt.getTime();
     console.log(passedTime);
-    if (passedTime > 24 * 60 * 1000 * 60 * 60) {
+    if (passedTime > 24 * 60 * 1000 * 60 * 1) {
       throw new UnauthorizedException('refreshToken은 이미 만료되었습니다');
     }
     const userInfo = await this.userService.getUserBycode(tokenInfo.userCode);

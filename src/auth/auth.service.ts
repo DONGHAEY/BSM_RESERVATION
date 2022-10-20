@@ -87,19 +87,19 @@ export class AuthService {
       {
         secret: process.env.SECRET_KEY,
         algorithm: 'HS256',
-        expiresIn: '60d',
+        expiresIn: '24h',
       },
     );
 
     res.cookie('token', token, {
       path: '/',
       httpOnly: true,
-      maxAge: 1000 * 8,
+      maxAge: 1000 * 60 * 60,
     });
     res.cookie('refreshToken', refreshToken, {
       path: '/',
       httpOnly: true,
-      maxAge: 24 * 60 * 1000 * 60 * 60,
+      maxAge: 24 * 60 * 1000 * 60 * 1,
     });
     return {
       token,

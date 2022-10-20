@@ -17,7 +17,6 @@ export class levelGuard implements CanActivate {
     if (!level) {
       return true;
     }
-
     const request = context.switchToHttp().getRequest();
 
     const user = request.user as User;

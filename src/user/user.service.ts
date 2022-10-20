@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StudentInfo } from './entity/StudentInfo.entity';
 import { TeacherInfo } from './entity/TeacherInfo.entity';
@@ -10,6 +10,7 @@ import BsmOauth, {
   StudentResource,
   TeacherResource,
 } from 'bsm-oauth';
+import { Level } from './types/Level.type';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,23 @@ export class UserService {
     @InjectRepository(TeacherInfo)
     private teacherRepository: Repository<TeacherInfo>,
   ) {}
+
+  async changeUserLevel(userCode: number, level: Level) {
+    const isExist = await this.checkExist(userCode);
+    if (!isExist) {
+      throw new NotFoundException(
+        'User has that userCode is Not Founded to change that user',
+      );
+    }
+    this.userRepository.update(
+      {
+        userCode,
+      },
+      {
+        level,
+      },
+    );
+  }
 
   async getUserBycode(
     userCode: number,
@@ -48,7 +66,7 @@ export class UserService {
         enrolledAt: user.student.enrolledAt,
         role: BsmOauthUserRole.STUDENT,
       };
-      return await StudentInfo.save({ ...studentInfo });
+      return await StudentInfo.save(studentInfo);
     }
     if (user.role === BsmOauthUserRole.TEACHER) {
       const teacherInfo: any = {
@@ -56,7 +74,14 @@ export class UserService {
         name: user.teacher.name,
         role: BsmOauthUserRole.TEACHER,
       };
-      return await TeacherInfo.save({ ...teacherInfo });
+      return await TeacherInfo.save(teacherInfo);
     }
+  }
+
+  private async checkExist(userCode: number): Promise<boolean> {
+    const findUser = await this.getUserBycode(userCode);
+    if (findUser) {
+      return true;
+    } else false;
   }
 }
