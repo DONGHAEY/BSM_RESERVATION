@@ -3,7 +3,7 @@
 <p>베르실 사용, 이석증등을 디지털로 간편하게<p>
 <p>를 개발할것이다..</p>
 
-Functions - BssmReservation
+<h2>Functions - BssmReservation</h2>
 
 Essential Functions
 

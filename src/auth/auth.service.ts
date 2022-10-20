@@ -1,10 +1,26 @@
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Response } from 'express';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/entity/User.entity';
 import { ConfigService } from '@nestjs/config';
+import BsmOauth, {
+  BsmOauthError,
+  BsmOauthErrorType,
+  BsmOauthUserRole,
+  StudentResource,
+  TeacherResource,
+} from 'bsm-oauth';
+import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
+import { StudentSignUpRequest } from 'src/user/dto/StudentSignUpRequest.dto';
+import { TeacherSignUpRequest } from 'src/user/dto/TeacherSignUp.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -12,83 +28,50 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
-
-  readonly BSM_OAUTH_CLIENT_ID = this.configService.get('BSM_OAUTH_CLIENT_ID');
-  readonly BSM_OAUTH_CLIENT_SECRET = this.configService.get(
-    'BSM_OAUTH_CLIENT_SECRET',
-  );
-  readonly GET_TOKEN_URL = this.configService.get('GET_TOKEN_URL');
-  readonly GET_RESOURCE_URL = this.configService.get('GET_RESOURCE_URL');
-  readonly ACCESSTOKEN_SECRET_KEY = this.configService.get(
-    'ACCESSTOKEN_SECRET_KEY',
-  );
-
-  async fetchToken(authCode: string): Promise<any> {
-    //BSM에서 authcode를 받아와 불변성 유저토큰을 받아내는 코드이다.
-    try {
-      const TokenRequest = await this.httpService
-        .post(this.GET_TOKEN_URL, {
-          clientId: this.BSM_OAUTH_CLIENT_ID,
-          clientSecret: this.BSM_OAUTH_CLIENT_SECRET,
-          authCode,
-        })
-        .toPromise();
-      return TokenRequest.data.token || null;
-    } catch (e) {
-      console.log(e.response.message);
-      throw new UnauthorizedException();
-    }
-  }
-
-  async fetchUserByToken(token: string): Promise<User> {
-    //BSM에서 받아온 토큰을 통해 유저를 가져오는 코드이다.
-    try {
-      const userResponse = await this.httpService
-        .post(this.GET_RESOURCE_URL, {
-          clientId: this.BSM_OAUTH_CLIENT_ID,
-          clientSecret: this.BSM_OAUTH_CLIENT_SECRET,
-          token,
-        })
-        .toPromise();
-      return userResponse.data.user || null;
-    } catch (e) {
-      throw new UnauthorizedException();
-    }
-  }
-
-  async loginOrRegister(token: string) {
-    //login 부분
-    const userResponse = await this.fetchUserByToken(token);
-    //db에서 유저를 찾는 코드
-    let userFind = await this.userService.getUserByCodeAndToken(
-      userResponse.userCode,
-      token,
+  ) {
+    this.bsmOauth = new BsmOauth(
+      process.env.BSM_OAUTH_CLIENT_ID,
+      process.env.BSM_OAUTH_CLIENT_SECRET,
     );
-    if (!userFind) {
-      //register 부분
-      userFind = await this.userService.saveUser(userResponse, token);
+  }
+
+  private bsmOauth: BsmOauth;
+
+  async oauthBsm(res: Response, authCode: string) {
+    let resource: StudentResource | TeacherResource;
+    try {
+      resource = await this.bsmOauth.getResource(
+        await this.bsmOauth.getToken(authCode),
+      );
+    } catch (error) {
+      if (error instanceof BsmOauthError) {
+        switch (error.type) {
+          case BsmOauthErrorType.INVALID_CLIENT: {
+            throw new InternalServerErrorException('OAuth Failed');
+          }
+          case BsmOauthErrorType.AUTH_CODE_NOT_FOUND: {
+            throw new NotFoundException('Authcode not found');
+          }
+          case BsmOauthErrorType.TOKEN_NOT_FOUND: {
+            throw new NotFoundException('Token not found');
+          }
+        }
+      }
+      throw new InternalServerErrorException('OAuth Failed');
     }
-    const accessToken = await this.generateAccessToken(userFind);
-    console.log(accessToken);
-    return {
-      accessToken,
-      user: userFind,
-    };
+    let userInfo = await this.userService.getUserBycode(resource.userCode);
+
+    if (!userInfo) {
+      // 유저를 저장한다.
+      // await this.userService.saveUser(resource);
+      // userInfo = await this.userService.getUserBycode(resource.userCode);
+      if (!userInfo) {
+        throw new NotFoundException('User not Found');
+      }
+    }
+    await this.login(res, userInfo);
+    res.redirect('http://localhost:3001/calendar');
   }
 
-  async testForFindUserByCode(userCode: number) {
-    return await this.userService.testForFindUserByCode(userCode);
-  }
-
-  async generateAccessToken(user: User) {
-    const payload = {
-      userCode: user.userCode,
-      email: user.email,
-    };
-    return this.jwtService.sign(payload, {
-      secret: this.ACCESSTOKEN_SECRET_KEY,
-      expiresIn: '1h',
-    });
-  }
+  async login(res: Response, userInfo: User) {}
 }

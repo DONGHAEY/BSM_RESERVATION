@@ -6,7 +6,6 @@ import { StudentInfo } from './entity/StudentInfo.entity';
 import { TeacherInfo } from './entity/TeacherInfo.entity';
 import { UserRepository } from './repository/User.Repository';
 import { TypeOrmForCustomRepositoryModule } from 'src/TypeormForCustomRepository/typeormForCustomRepository.module';
-import { UserController } from './user.controller';
 import { InChargeInfoRepository } from './repository/InchargeInfo.repository';
 import { SelfStudyTime } from './entity/SelfStudyTime.entity';
 import { HomeRoom } from './entity/HomeRoom.entity';
@@ -25,6 +24,5 @@ import { HomeRoom } from './entity/HomeRoom.entity';
   ],
   exports: [UserService],
   providers: [UserService],
-  controllers: [UserController],
 })
 export class UserModule {}

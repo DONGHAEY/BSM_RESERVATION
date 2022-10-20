@@ -1,15 +1,12 @@
+import { BsmOauthUserRole } from 'bsm-oauth';
 import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
-  OneToMany,
-  OneToOne,
   PrimaryColumn,
   TableInheritance,
 } from 'typeorm';
 import { Level } from '../types/Level.type';
-import { Role } from '../types/Role.type';
 
 //single table pattern이라고 한다. //https://velog.io/@loakick/Nest.js-TypeORM-리팩터링-SingleTableInheritance //여기서 배웠는데 너무 좋다..
 @Entity({
@@ -18,7 +15,7 @@ import { Role } from '../types/Role.type';
 @TableInheritance({
   column: {
     type: 'enum',
-    enum: Role,
+    enum: BsmOauthUserRole,
     name: 'role',
   },
 })
@@ -57,15 +54,9 @@ export class User extends BaseEntity {
   level: Level;
 
   @Column({
-    name: 'oauth_token',
-    type: 'varchar',
-  })
-  oauthToken: string;
-
-  @Column({
     name: 'role',
     type: 'enum',
-    enum: Role,
+    enum: BsmOauthUserRole,
   })
-  role: Role; //역할은 학생, 선생님 둘 중 하나를 가진다.
+  role: BsmOauthUserRole; //역할은 학생, 선생님 둘 중 하나를 가진다.
 }

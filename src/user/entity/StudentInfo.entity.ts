@@ -1,9 +1,9 @@
+import { BsmOauthUserRole } from 'bsm-oauth';
 import { RequestMember } from 'src/room/entity/RequestMember.entity';
 import { Column, ChildEntity, PrimaryColumn, OneToMany } from 'typeorm';
-import { Role } from '../types/Role.type';
 import { User } from './User.entity';
 
-@ChildEntity(Role.STUDENT)
+@ChildEntity(BsmOauthUserRole.STUDENT)
 export class StudentInfo extends User {
   @PrimaryColumn({
     name: 'user_code',
