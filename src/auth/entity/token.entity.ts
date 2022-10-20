@@ -13,10 +13,12 @@ export class Token extends BaseEntity {
     length: 300,
   })
   token: string;
+
   @Column({
     default: true,
   })
   valid: boolean;
+
   @ManyToOne((type) => User, (user) => user.userCode)
   @JoinColumn({ name: 'user_code' })
   user: User;

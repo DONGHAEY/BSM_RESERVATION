@@ -94,7 +94,7 @@ export class AuthService {
     res.cookie('token', token, {
       path: '/',
       httpOnly: true,
-      maxAge: 1000 * 6,
+      maxAge: 1000 * 8,
     });
     res.cookie('refreshToken', refreshToken, {
       path: '/',

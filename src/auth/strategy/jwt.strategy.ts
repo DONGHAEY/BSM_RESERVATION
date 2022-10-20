@@ -43,9 +43,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (refreshToken === undefined) {
       throw new UnauthorizedException();
     }
-    const tokenInfo = await this.getToken(refreshToken);
+    const tokenInfo = await this.getRecentToken(refreshToken);
     if (tokenInfo === null) {
       throw new UnauthorizedException();
+    }
+    const passedTime = new Date().getTime() - tokenInfo.createdAt.getTime();
+    console.log(passedTime);
+    if (passedTime > 24 * 60 * 1000 * 60 * 60) {
+      throw new UnauthorizedException('refreshToken은 이미 만료되었습니다');
     }
     const userInfo = await this.userService.getUserBycode(tokenInfo.userCode);
     if (userInfo === null) {
@@ -68,10 +73,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return userInfo;
   }
 
-  private async getToken(token: string): Promise<Token | null> {
+  private async getRecentToken(token: string): Promise<Token | null> {
     return await this.tokenRepository.findOne({
       where: {
         token,
+      },
+      order: {
+        createdAt: 'DESC',
       },
     });
   }
