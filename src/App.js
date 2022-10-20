@@ -12,6 +12,7 @@ import {
 import { useEffect } from "react";
 import { userState } from "./store/user";
 import axios, { AxiosError } from "axios";
+import ServicePage from "./components/Service/Service";
 
 function App() {
   const [user, setUser] = useRecoilState(userState);
@@ -40,6 +41,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Main />} />
+          <Route path="/service" element={<ServicePage />} />
         </Routes>
       </BrowserRouter>
     </div>
