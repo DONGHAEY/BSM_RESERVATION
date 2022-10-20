@@ -5,24 +5,29 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/entity/User.entity';
-import { ConfigService } from '@nestjs/config';
+import { Repository } from 'typeorm';
 import BsmOauth, {
   BsmOauthError,
   BsmOauthErrorType,
-  BsmOauthUserRole,
   StudentResource,
   TeacherResource,
 } from 'bsm-oauth';
+import { Token } from './entity/token.entity';
+import { randomBytes } from 'crypto';
+
+const { SECRET_KEY } = process.env;
+
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    @InjectRepository(Token)
+    private tokenRepository: Repository<Token>,
   ) {
     this.bsmOauth = new BsmOauth(
       process.env.BSM_OAUTH_CLIENT_ID,
@@ -65,11 +70,53 @@ export class AuthService {
         throw new NotFoundException('User not Found');
       }
     }
-    console.log(userInfo);
-
     await this.login(res, userInfo);
     res.redirect('http://localhost:3000/');
   }
 
-  async login(res: Response, userInfo: User) {}
+  async login(res: Response, user: User) {
+    const token = this.jwtService.sign(
+      { ...user },
+      {
+        secret: SECRET_KEY,
+        algorithm: 'HS256',
+        expiresIn: '1h',
+      },
+    );
+    const refreshToken = this.jwtService.sign(
+      {
+        refreshToken: (await this.createToken(user.userCode)).token,
+      },
+      {
+        secret: SECRET_KEY,
+        algorithm: 'HS256',
+        expiresIn: '60d',
+      },
+    );
+
+    res.cookie('token', token, {
+      path: '/',
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60,
+    });
+    res.cookie('refreshToken', refreshToken, {
+      path: '/',
+      httpOnly: true,
+      maxAge: 24 * 60 * 1000 * 60 * 60,
+    });
+    return {
+      token,
+      refreshToken: refreshToken,
+    };
+  }
+
+  private async createToken(userCode: number): Promise<Token> {
+    const refreshToken = new Token();
+    refreshToken.token = randomBytes(64).toString('hex');
+    refreshToken.userCode = userCode;
+    refreshToken.valid = true;
+    refreshToken.createdAt = new Date();
+    await this.tokenRepository.save(refreshToken);
+    return refreshToken;
+  }
 }
