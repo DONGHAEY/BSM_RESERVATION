@@ -102,31 +102,34 @@ export class UserService {
   }
 
   async saveUser(user: StudentResource | TeacherResource, userToken: string) {
+    const { userCode, email, nickname } = user;
     const userInfo = {
-      userCode: user.userCode,
-      email: user.email,
-      nickname: user.nickname,
+      userCode: userCode,
+      email: email,
+      nickname: nickname,
       token: userToken,
     };
     if (user.role === BsmOauthUserRole.STUDENT) {
+      const { name, classNo, grade, studentNo, enrolledAt } = user.student;
       const studentInfo: any = {
         ...userInfo,
-        name: user.student.name,
-        classNo: user.student.classNo,
-        grade: user.student.grade,
-        studentNo: user.student.studentNo,
-        enrolledAt: user.student.enrolledAt,
+        name: name,
+        classNo: classNo,
+        grade: grade,
+        studentNo: studentNo,
+        enrolledAt: enrolledAt,
         role: BsmOauthUserRole.STUDENT,
       };
-      return await StudentInfo.save(studentInfo);
+      return await this.studentRepository.save(studentInfo);
     }
     if (user.role === BsmOauthUserRole.TEACHER) {
+      const { name } = user.teacher;
       const teacherInfo: any = {
         ...userInfo,
-        name: user.teacher.name,
+        name: name,
         role: BsmOauthUserRole.TEACHER,
       };
-      return await TeacherInfo.save(teacherInfo);
+      return await this.teacherRepository.save(teacherInfo);
     }
   }
 
