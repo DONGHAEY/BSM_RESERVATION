@@ -14,7 +14,6 @@ import {
 import JwtAuthGuard from './guards/auth.guard';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
-// https://auth.bssm.kro.kr/oauth?clientId=e8f78fa2&redirectURI=http://localhost:3000/afterLogin
 @Controller('oauth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -24,6 +23,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Query('code') authCode: string,
   ) {
+    console.log(process.env.SECRET_KEY, '==============');
     return this.authService.oauthBsm(res, authCode);
   }
 }

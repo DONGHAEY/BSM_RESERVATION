@@ -19,8 +19,6 @@ import BsmOauth, {
 import { Token } from './entity/token.entity';
 import { randomBytes } from 'crypto';
 
-const { SECRET_KEY } = process.env;
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -78,7 +76,7 @@ export class AuthService {
     const token = this.jwtService.sign(
       { ...user },
       {
-        secret: SECRET_KEY,
+        secret: process.env.SECRET_KEY,
         algorithm: 'HS256',
         expiresIn: '1h',
       },
@@ -88,7 +86,7 @@ export class AuthService {
         refreshToken: (await this.createToken(user.userCode)).token,
       },
       {
-        secret: SECRET_KEY,
+        secret: process.env.SECRET_KEY,
         algorithm: 'HS256',
         expiresIn: '60d',
       },

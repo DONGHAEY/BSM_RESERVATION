@@ -13,7 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 
 const { SECRET_KEY } = process.env;
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private jwtService: JwtService,
     @InjectRepository(User)
@@ -27,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
           return req?.cookies?.token || req?.cookies?.refreshToken;
         },
       ]),
-      secretOrKey: process.env.SECRET_KEY,
+      secretOrKey: 'SECRET_KEY',
       passReqToCallback: true,
     });
   }
