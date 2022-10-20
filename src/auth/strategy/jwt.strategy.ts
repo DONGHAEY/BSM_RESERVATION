@@ -14,6 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
+    private userService: UserService,
     private jwtService: JwtService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -32,7 +33,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(req: Request, user: User): Promise<User> {
-    console.log('-------------');
     if (user.userCode) {
       return user;
     }
@@ -47,7 +47,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (tokenInfo === null) {
       throw new UnauthorizedException();
     }
-    const userInfo = await this.getUser(tokenInfo.userCode);
+    const userInfo = await this.userService.getUserBycode(tokenInfo.userCode);
     if (userInfo === null) {
       throw new UnauthorizedException();
     }
@@ -66,14 +66,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       maxAge: 1000 * 60 * 60,
     });
     return userInfo;
-  }
-
-  private async getUser(userCode: number): Promise<User | null> {
-    return this.userRepository.findOne({
-      where: {
-        userCode,
-      },
-    });
   }
 
   private async getToken(token: string): Promise<Token | null> {
