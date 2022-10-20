@@ -94,7 +94,7 @@ export class AuthService {
     res.cookie('token', token, {
       path: '/',
       httpOnly: true,
-      maxAge: 1000 * 60 * 60,
+      maxAge: 1000 * 6,
     });
     res.cookie('refreshToken', refreshToken, {
       path: '/',
@@ -105,6 +105,19 @@ export class AuthService {
       token,
       refreshToken: refreshToken,
     };
+  }
+
+  async logout(res: Response) {
+    res.cookie('token', '', {
+      path: '/',
+      httpOnly: true,
+      maxAge: 0,
+    });
+    res.cookie('refreshToken', '', {
+      path: '/',
+      httpOnly: true,
+      maxAge: 0,
+    });
   }
 
   private async createToken(userCode: number): Promise<Token> {

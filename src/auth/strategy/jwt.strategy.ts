@@ -26,16 +26,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           return req?.cookies?.token || req?.cookies?.refreshToken;
         },
       ]),
-      secretOrKey: 'SECRET_KEY',
+      secretOrKey: process.env.SECRET_KEY,
       passReqToCallback: true,
     });
   }
 
   async validate(req: Request, user: User): Promise<User> {
+    console.log('-------------');
     if (user.userCode) {
       return user;
     }
-    const { refreshToken } = this.jwtService.verify(req?.cookies?.refreshToken);
+    const { refreshToken } = this.jwtService.verify(
+      req?.cookies?.refreshToken,
+      { secret: process.env.SECRET_KEY },
+    );
     if (refreshToken === undefined) {
       throw new UnauthorizedException();
     }
