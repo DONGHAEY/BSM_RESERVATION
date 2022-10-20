@@ -1,4 +1,3 @@
-import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response } from 'express';
 import {
@@ -69,7 +68,7 @@ export class AuthService {
       }
     }
     await this.login(res, userInfo);
-    res.redirect('http://localhost:3000/');
+    res.redirect(process.env.CLIENT_REDIRECT);
   }
 
   async login(res: Response, user: User) {

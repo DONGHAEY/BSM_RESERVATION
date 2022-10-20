@@ -18,7 +18,7 @@ export class Token extends BaseEntity {
   })
   valid: boolean;
   @ManyToOne((type) => User, (user) => user.userCode)
-  @JoinColumn({ name: 'userCode' })
+  @JoinColumn({ name: 'user_code' })
   user: User;
 
   @Column({

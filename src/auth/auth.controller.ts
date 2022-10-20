@@ -23,7 +23,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Query('code') authCode: string,
   ) {
-    console.log(process.env.SECRET_KEY, '==============');
     return this.authService.oauthBsm(res, authCode);
   }
 }

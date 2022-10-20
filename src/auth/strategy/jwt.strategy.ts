@@ -11,7 +11,6 @@ import { Token } from '../entity/token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 
-const { SECRET_KEY } = process.env;
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -52,7 +51,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const token = this.jwtService.sign(
       { ...userInfo },
       {
-        secret: SECRET_KEY,
+        secret: process.env.SECRET_KEY,
         algorithm: 'HS256',
         expiresIn: '1h',
       },

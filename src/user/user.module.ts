@@ -9,6 +9,7 @@ import { TypeOrmForCustomRepositoryModule } from 'src/TypeormForCustomRepository
 import { InChargeInfoRepository } from './repository/InchargeInfo.repository';
 import { SelfStudyTime } from './entity/SelfStudyTime.entity';
 import { HomeRoom } from './entity/HomeRoom.entity';
+import { UserController } from './user.controller';
 @Module({
   imports: [
     TypeOrmForCustomRepositoryModule.forCustomRepository([
@@ -24,5 +25,6 @@ import { HomeRoom } from './entity/HomeRoom.entity';
   ],
   exports: [UserService],
   providers: [UserService],
+  controllers: [UserController],
 })
 export class UserModule {}
