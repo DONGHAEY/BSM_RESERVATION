@@ -14,6 +14,7 @@ import { levelGuard } from 'src/auth/guards/level.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { DormitoryDto } from './dto/Dormitory.dto';
 import { HomeRoomDto } from './dto/HomeRoom.dto';
+import SearchUserDto from './dto/searchUser.dto';
 import { SelfStudyTimeDto } from './dto/SelfStudyTime.dto';
 import { User } from './entity/User.entity';
 import { Level } from './types/Level.type';
@@ -35,6 +36,12 @@ export class UserController {
   @Get('/:userCode')
   async getOtherUserInfo(@Query('userCode') userCode: number) {
     return await this.userService.getUserBycode(userCode);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/search')
+  async searchUser(@Body() searchUserDto: SearchUserDto) {
+    return await this.userService.searchUser(searchUserDto);
   }
 
   /// 유저의 서비스 레벨을 변환할 수 있는 API - 관리자 권한 이상 ///

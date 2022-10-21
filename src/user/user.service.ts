@@ -3,12 +3,13 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StudentInfo } from './entity/StudentInfo.entity';
 import { TeacherInfo } from './entity/TeacherInfo.entity';
 import { UserRepository } from './repository/User.Repository';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { User } from './entity/User.entity';
 import BsmOauth, {
   BsmOauthUserRole,
@@ -23,6 +24,7 @@ import { InCharge } from './types/InCharge.type';
 import { HomeRoom } from './entity/HomeRoom.entity';
 import { SelfStudyTime } from './entity/SelfStudyTime.entity';
 import { InChargeInfo } from './entity/InChargeInfo.entity';
+import SearchUserDto from './dto/searchUser.dto';
 
 @Injectable()
 export class UserService {
@@ -40,7 +42,7 @@ export class UserService {
     private inchargeInfoRepository: Repository<InChargeInfo>,
   ) {}
 
-  async changeUserLevel(userCode: number, level: Level) {
+  async changeUserLevel(userCode: number, level: Level): Promise<void> {
     const user: User = await this.getUserBycode<User>(userCode);
     await this.userRepository.update(
       {
@@ -56,7 +58,10 @@ export class UserService {
     userCode: number,
     dto: HomeRoomDto | DormitoryDto | SelfStudyTimeDto,
   ): Promise<void> {
-    const user: TeacherInfo = await this.getUserBycode<TeacherInfo>(userCode);
+    const teacherInfo: TeacherInfo = await this.getUserBycode<TeacherInfo>(
+      userCode,
+    );
+    await this.rolePass(teacherInfo, BsmOauthUserRole.TEACHER);
     //INCHARGE TYPE 에 따라 다르게 저장해야한다
     if (dto.incharge === InCharge.DORMITORY) {
       await this.inchargeInfoRepository.save({ ...dto, userCode });
@@ -69,8 +74,29 @@ export class UserService {
     }
   }
 
+  async deleteInchargeInfo(
+    userCode: number,
+    inChargeCode: number,
+  ): Promise<void> {
+    const inChargeInfo = await this.getInchargeInfoBycode(inChargeCode);
+    await this.inchargeInfoRepository.delete({
+      inChargeCode: inChargeInfo.inChargeCode,
+    });
+  }
+
+  async searchUser(searchUserDto: SearchUserDto) {
+    const goods = await this.userRepository.find({
+      where: {
+        name: Like(`%${searchUserDto.name}%`),
+        role: searchUserDto.role,
+      },
+      take: 5,
+    });
+    return goods;
+  }
+
   async getUserBycode<T>(userCode: number): Promise<T> {
-    const user = await this.userRepository.findOne({
+    const user: User = await this.userRepository.findOne({
       where: {
         userCode,
       },
@@ -80,6 +106,21 @@ export class UserService {
     }
     return <T>user;
   }
+
+  async getInchargeInfoBycode(inChargeCode: number) {
+    const inchargeInfo: InChargeInfo =
+      await this.inchargeInfoRepository.findOne({
+        where: {
+          inChargeCode,
+        },
+      });
+    if (!inchargeInfo) {
+      throw new NotFoundException(`${inChargeCode} inChargeCode is not exsist`);
+    }
+    return inchargeInfo;
+  }
+
+  async getInchargeInfoList() {}
 
   async saveUser(
     user: StudentResource | TeacherResource,
@@ -91,5 +132,14 @@ export class UserService {
     if (user.role === BsmOauthUserRole.TEACHER) {
       return await this.teacherRepository.save({ ...user, token });
     }
+  }
+
+  private async rolePass(user: User, role: BsmOauthUserRole): Promise<void> {
+    if (user.role === role) {
+      return;
+    }
+    throw new UnauthorizedException(
+      `${user.userCode} user has not ${role} role`,
+    );
   }
 }
