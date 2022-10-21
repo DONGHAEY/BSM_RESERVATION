@@ -57,7 +57,9 @@ export class AuthService {
       throw new InternalServerErrorException('OAuth Failed');
     }
 
-    let userInfo = await this.userService.getUserBycode(resource.userCode);
+    let userInfo: User = await this.userService.getUserBycode<User>(
+      resource.userCode,
+    );
 
     if (!userInfo) {
       // 유저를 저장한다.

@@ -41,15 +41,10 @@ export class UserService {
   ) {}
 
   async changeUserLevel(userCode: number, level: Level) {
-    const isExist = await this.checkExist(userCode);
-    if (!isExist) {
-      throw new NotFoundException(
-        `User has ${userCode} userCode is Not Founded to change that user`,
-      );
-    }
+    const user: User = await this.getUserBycode<User>(userCode);
     await this.userRepository.update(
       {
-        userCode,
+        userCode: user.userCode,
       },
       {
         level,
@@ -60,25 +55,8 @@ export class UserService {
   async addInchargeInfo(
     userCode: number,
     dto: HomeRoomDto | DormitoryDto | SelfStudyTimeDto,
-  ) {
-    const isExist = await this.checkExist(userCode);
-    if (!isExist) {
-      throw new NotFoundException(
-        `User has ${userCode} userCode is Not Founded to addInchargeInfo that user`,
-      );
-    }
-    const user = await this.userRepository.findOne({
-      where: {
-        userCode,
-      },
-    });
-    const isTeacher = await this.checkRole(user, BsmOauthUserRole.TEACHER);
-    if (!isTeacher) {
-      throw new HttpException(
-        `User has ${userCode} doesn't have Teacher Role`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  ): Promise<void> {
+    const user: TeacherInfo = await this.getUserBycode<TeacherInfo>(userCode);
     //INCHARGE TYPE 에 따라 다르게 저장해야한다
     if (dto.incharge === InCharge.DORMITORY) {
       await this.inchargeInfoRepository.save({ ...dto, userCode });
@@ -91,17 +69,22 @@ export class UserService {
     }
   }
 
-  async getUserBycode(
-    userCode: number,
-  ): Promise<User | TeacherInfo | StudentInfo> {
-    return await this.userRepository.findOne({
+  async getUserBycode<T>(userCode: number): Promise<T> {
+    const user = await this.userRepository.findOne({
       where: {
         userCode,
       },
     });
+    if (!user) {
+      throw new NotFoundException(`${userCode} user Has Not Founded`);
+    }
+    return <T>user;
   }
 
-  async saveUser(user: StudentResource | TeacherResource, userToken: string) {
+  async saveUser(
+    user: StudentResource | TeacherResource,
+    userToken: string,
+  ): Promise<StudentInfo | TeacherInfo> {
     const { userCode, email, nickname } = user;
     const userInfo = {
       userCode: userCode,
@@ -111,7 +94,7 @@ export class UserService {
     };
     if (user.role === BsmOauthUserRole.STUDENT) {
       const { name, classNo, grade, studentNo, enrolledAt } = user.student;
-      const studentInfo: any = {
+      const studentInfo = {
         ...userInfo,
         name: name,
         classNo: classNo,
@@ -131,22 +114,5 @@ export class UserService {
       };
       return await this.teacherRepository.save(teacherInfo);
     }
-  }
-
-  private async checkExist(userCode: number): Promise<boolean> {
-    const findUser = await this.getUserBycode(userCode);
-    if (findUser) {
-      return true;
-    } else false;
-  }
-
-  private async checkRole(
-    user: User,
-    role: BsmOauthUserRole,
-  ): Promise<boolean> {
-    if (user.role === role) {
-      return true;
-    }
-    return false;
   }
 }
