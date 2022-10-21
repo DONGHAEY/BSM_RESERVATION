@@ -101,9 +101,6 @@ export class UserService {
         userCode,
       },
     });
-    if (!user) {
-      throw new NotFoundException(`${userCode} user Has Not Founded`);
-    }
     return <T>user;
   }
 
@@ -114,9 +111,6 @@ export class UserService {
           inChargeCode,
         },
       });
-    if (!inchargeInfo) {
-      throw new NotFoundException(`${inChargeCode} inChargeCode is not exsist`);
-    }
     return inchargeInfo;
   }
 
