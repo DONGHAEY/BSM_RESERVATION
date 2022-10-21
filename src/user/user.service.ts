@@ -83,36 +83,13 @@ export class UserService {
 
   async saveUser(
     user: StudentResource | TeacherResource,
-    userToken: string,
+    token: string,
   ): Promise<StudentInfo | TeacherInfo> {
-    const { userCode, email, nickname } = user;
-    const userInfo = {
-      userCode: userCode,
-      email: email,
-      nickname: nickname,
-      token: userToken,
-    };
     if (user.role === BsmOauthUserRole.STUDENT) {
-      const { name, classNo, grade, studentNo, enrolledAt } = user.student;
-      const studentInfo = {
-        ...userInfo,
-        name: name,
-        classNo: classNo,
-        grade: grade,
-        studentNo: studentNo,
-        enrolledAt: enrolledAt,
-        role: BsmOauthUserRole.STUDENT,
-      };
-      return await this.studentRepository.save(studentInfo);
+      return await this.studentRepository.save({ ...user, token });
     }
     if (user.role === BsmOauthUserRole.TEACHER) {
-      const { name } = user.teacher;
-      const teacherInfo: any = {
-        ...userInfo,
-        name: name,
-        role: BsmOauthUserRole.TEACHER,
-      };
-      return await this.teacherRepository.save(teacherInfo);
+      return await this.teacherRepository.save({ ...user, token });
     }
   }
 }
