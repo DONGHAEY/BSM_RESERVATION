@@ -11,7 +11,7 @@ import {
   OneToOne,
   OneToMany,
 } from 'typeorm';
-import { EntryAvailable } from './EntryAvailable.entity';
+import { EntryAvailable } from '../../room/entity/EntryAvailable.entity';
 import { RequestMember } from './RequestMember.entity';
 
 @Entity('request_info')

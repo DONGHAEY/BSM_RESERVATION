@@ -1,5 +1,5 @@
 import { BsmOauthUserRole } from 'bsm-oauth';
-import { RequestInfo } from 'src/room/entity/RequestInfo.entity';
+import { RequestInfo } from 'src/moving-certification/entity/RequestInfo.entity';
 import {
   BaseEntity,
   Column,
