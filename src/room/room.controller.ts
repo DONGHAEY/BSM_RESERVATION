@@ -21,31 +21,41 @@ import { RoomService } from './room.service';
 import { RoomType } from './type/Room.type';
 
 @Controller('room')
-@UseGuards(JwtAuthGuard, levelGuard, RolesGuard)
+// @UseGuards(JwtAuthGuard, levelGuard, RolesGuard)
 export class RoomController {
   constructor(private roomService: RoomService) {}
 
   /// 모든 룸 리스트를 불러오는 API ///
   @Get()
-  async getAllRoomList() {}
-
-  /// 특정 타입에 속해 있는 룸 리스트를 불러오는 API ///
-  @Get('/:roomType')
-  async getTypeRoomList(@Query('roomType') RoomType: RoomType) {}
+  async getAllRoomList() {
+    // pagenation 두기
+    return await this.roomService.getRoomList();
+  }
 
   /// 특정 룸의 정보를 자세히 불러오는 API ///
   @Get('/:roomCode')
-  async getRoomDetailInfo(@Query('roomCode') roomCode: number) {}
+  async getRoomDetailInfo(@Query('roomCode') roomCode: number) {
+    // 룸의 정보를 자세히 보여주어야하기 때문에, 오늘 예약이 되어있는 정보도 같이 보내주어야함.
+    return await this.roomService.getRoomBycode(roomCode, true);
+  }
 
+  /// 특정 타입에 속해 있는 룸 리스트를 불러오는 API ///
+  @Get('/roomType/:roomType')
+  async getTypeRoomList(@Query('roomType') RoomType: RoomType) {
+    return await this.roomService.getRoomList(RoomType);
+  }
+
+  /// 예약을 요청하는 API ///
   @Post('/request')
   @Roles(BsmOauthUserRole.STUDENT)
   async requestToTeacher(@Body() requestReservationDto) {}
 
+  /// 예약을 승인 및 거부하는 API ///
   @Post('/response')
   @Roles(BsmOauthUserRole.TEACHER)
   async responseToStudents(@Body() responseReservationDto) {}
 
-  // room을 등록하는
+  // room을 등록하는 API ///
   @Post('registerRoom')
   @Levels(Level.ADMIN)
   async registerRoom(
@@ -54,18 +64,15 @@ export class RoomController {
     @Body('roomType') roomType: RoomType,
     @Body('roomCode') roomCode: number,
   ) {
-    return await this.roomService.createRoom(roomCode, roomType, roomName);
+    return await this.roomService.registerRoom(roomCode, roomType, roomName);
   }
 
-  @Post('/:roomCode/addAvailableEntryInfo')
+  /// 방 입장 가능 정보를 추가하는 API ///
+  @Post('/addAvailableEntryInfo')
   @Levels(Level.MANAGER)
   async addEntryAvailableInfo(
-    @Query('roomCode') roomCode: number,
     @Body() addEntryAvailableDto: AddEntryAvailableDto,
   ) {
-    return await this.roomService.addEntryAvailableInfo(
-      roomCode,
-      addEntryAvailableDto,
-    );
+    return await this.roomService.addEntryAvailableInfo(addEntryAvailableDto);
   }
 }

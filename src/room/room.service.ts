@@ -12,12 +12,12 @@ export class RoomService {
     private entryAvailableRepository: EntryAvailableRepository,
   ) {}
 
-  async createRoom(
+  async registerRoom(
     roomCode: number,
     roomType: RoomType,
     roomName: string,
-  ): Promise<Room> {
-    return await this.roomRepository.save({
+  ): Promise<void> {
+    await this.roomRepository.save({
       roomCode,
       roomName,
       roomType,
@@ -25,12 +25,40 @@ export class RoomService {
   }
 
   async addEntryAvailableInfo(
-    roomCode: number,
     addEntryAvailableDto: AddEntryAvailableDto,
+  ): Promise<void> {
+    const room = this.getRoomBycode(addEntryAvailableDto.roomCode);
+    if (room) {
+      await this.entryAvailableRepository.save(addEntryAvailableDto);
+    }
+  }
+
+  async getRoomList(
+    roomType: RoomType | null = null,
+    loadEntryAvailable: boolean = false,
+  ): Promise<Room[]> {
+    if (roomType) {
+      return await this.roomRepository.find({
+        where: {
+          roomType,
+        },
+        loadEagerRelations: loadEntryAvailable,
+      });
+    }
+    return await this.roomRepository.find({
+      loadEagerRelations: loadEntryAvailable,
+    });
+  }
+
+  async getRoomBycode(
+    roomCode: number,
+    loadEntryAvailableList: boolean = false,
   ) {
-    return await this.entryAvailableRepository.save({
-      roomCode,
-      ...addEntryAvailableDto,
+    return await this.roomRepository.findOne({
+      where: {
+        roomCode,
+      },
+      loadEagerRelations: loadEntryAvailableList,
     });
   }
 }
