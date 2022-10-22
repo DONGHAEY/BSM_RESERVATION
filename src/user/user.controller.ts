@@ -38,6 +38,7 @@ export class UserController {
     return await this.userService.getUserBycode(userCode);
   }
 
+  /// 유저의 이름으로 유저들을 검색할 수 있는 API ///
   @UseGuards(JwtAuthGuard)
   @Get('/search')
   async searchUser(@Body() searchUserDto: SearchUserDto) {
@@ -55,14 +56,22 @@ export class UserController {
     return await this.userService.changeUserLevel(userCode, level);
   }
 
-  ///  선생님의 담당정보를 추가하는 API - 매니저 권한 이상///
+  ///  선생님의 담당정보를 추가하는 API - 매니저 권한 이상 ///
   @UseGuards(JwtAuthGuard, levelGuard)
   @Post('/:userCode/inchargeInfo')
   @Levels(Level.MANAGER)
   async addInchargeInfo(
     @Query('userCode') userCode: number,
-    @Body() inchargeDto: HomeRoomDto | SelfStudyTimeDto | DormitoryDto,
+    @Body() inChargeDto: HomeRoomDto | SelfStudyTimeDto | DormitoryDto,
   ) {
-    await this.userService.addInchargeInfo(userCode, inchargeDto);
+    await this.userService.addInchargeInfo(userCode, inChargeDto);
+  }
+
+  /// 선생님의 담당정보를 삭제하는 API - 매니저 권한 이상 ///
+  @UseGuards(JwtAuthGuard, levelGuard)
+  @Post('/:userCode/inchargeInfo')
+  @Levels(Level.MANAGER)
+  async deleteInchargeInfo(@Query('inChargeCode') inChargeCode: number) {
+    await this.userService.deleteInchargeInfo(inChargeCode);
   }
 }

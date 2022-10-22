@@ -74,25 +74,24 @@ export class UserService {
     }
   }
 
-  async deleteInchargeInfo(
-    userCode: number,
-    inChargeCode: number,
-  ): Promise<void> {
+  async deleteInchargeInfo(inChargeCode: number): Promise<void> {
     const inChargeInfo = await this.getInchargeInfoBycode(inChargeCode);
-    await this.inchargeInfoRepository.delete({
-      inChargeCode: inChargeInfo.inChargeCode,
-    });
+    if (inChargeCode) {
+      await this.inchargeInfoRepository.delete({
+        inChargeCode: inChargeInfo.inChargeCode,
+      });
+    }
   }
 
   async searchUser(searchUserDto: SearchUserDto) {
-    const goods = await this.userRepository.find({
+    const searchedUsers = await this.userRepository.find({
       where: {
         name: Like(`%${searchUserDto.name}%`),
         role: searchUserDto.role,
       },
       take: 5,
     });
-    return goods;
+    return searchedUsers;
   }
 
   async getUserBycode<T>(userCode: number): Promise<T> {
@@ -113,8 +112,6 @@ export class UserService {
       });
     return inchargeInfo;
   }
-
-  async getInchargeInfoList() {}
 
   async saveUser(
     user: StudentResource | TeacherResource,
