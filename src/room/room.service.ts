@@ -11,6 +11,7 @@ export class RoomService {
     private roomRepository: RoomRepository,
     private entryAvailableRepository: EntryAvailableRepository,
   ) {}
+
   async createRoom(
     roomCode: number,
     roomType: RoomType,
