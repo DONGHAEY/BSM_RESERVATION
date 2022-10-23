@@ -89,6 +89,7 @@ export class RequestInfo extends BaseEntity {
   @Column({
     name: 'is_acc',
     enum: isAccType,
+    type: 'enum',
   })
   isAcc: isAccType;
 }
