@@ -45,6 +45,7 @@ export class RoomController {
     return await this.roomService.getRoomList(RoomType);
   }
 
+  ///// moving-certification Module 부분 /////
   /// 예약을 요청하는 API ///
   @Post('/request')
   @Roles(BsmOauthUserRole.STUDENT)
@@ -54,6 +55,7 @@ export class RoomController {
   @Post('/response')
   @Roles(BsmOauthUserRole.TEACHER)
   async responseToStudents(@Body() responseReservationDto) {}
+  ///// moving-certification Module 부분 /////
 
   // room을 등록하는 API ///
   @Post('registerRoom')

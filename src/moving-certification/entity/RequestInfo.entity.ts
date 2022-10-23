@@ -12,6 +12,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { EntryAvailable } from '../../room/entity/EntryAvailable.entity';
+import { isAccType } from '../types/isAcc.type';
 import { RequestMember } from './RequestMember.entity';
 
 @Entity('request_info')
@@ -84,4 +85,10 @@ export class RequestInfo extends BaseEntity {
     },
   )
   requestMembers: RequestMember[];
+
+  @Column({
+    name: 'is_acc',
+    enum: isAccType,
+  })
+  isAcc: isAccType;
 }
