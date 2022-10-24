@@ -6,14 +6,22 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { InCharge } from 'src/user/types/InCharge.type';
 import { Room } from './Room.entity';
 import { RequestInfo } from '../../moving-certification/entity/RequestInfo.entity';
 
 @Entity('entry_available')
+@Index(['roomCode', 'day', 'openAt'], { unique: true })
 export class EntryAvailable extends BaseEntity {
   @PrimaryColumn({
+    name: 'entry_available_code',
+    type: 'int',
+  })
+  entryAvailableCode: number;
+
+  @Column({
     name: 'room_code',
     type: 'int',
   })
@@ -25,13 +33,13 @@ export class EntryAvailable extends BaseEntity {
   @JoinColumn({ name: 'room_code' })
   room: Room;
 
-  @PrimaryColumn({
+  @Column({
     name: 'day',
     type: 'int',
   })
   day: number; //요일
 
-  @PrimaryColumn({
+  @Column({
     name: 'open_at',
     type: 'varchar', //0800 | 08시 00분 시작시간이 겹칠 수 없기 때문에 Primary를 주었다
     length: 4,
