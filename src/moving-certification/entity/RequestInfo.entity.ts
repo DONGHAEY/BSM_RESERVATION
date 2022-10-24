@@ -14,6 +14,7 @@ import {
 import { EntryAvailable } from '../../room/entity/EntryAvailable.entity';
 import { isAccType } from '../types/isAcc.type';
 import { RequestMember } from './RequestMember.entity';
+import { ResponseMember } from './ResponseMember.entity';
 
 @Entity('request_info')
 export class RequestInfo extends BaseEntity {
@@ -47,11 +48,14 @@ export class RequestInfo extends BaseEntity {
   })
   requestWhen: Date; //언제 요청했는지
 
-  @Column({
-    name: 'teacher_user_code',
-    type: 'int',
+  @OneToMany(
+    (type) => ResponseMember,
+    (responseMember) => responseMember.requestCode,
+  )
+  @JoinColumn({
+    name: 'request_code',
   })
-  teacherUserCode: number; //요청받는 선생님의 유저 코드이다.
+  teacherMembers: ResponseMember[]; //요청받는 선생님의 유저 코드이다.
 
   @OneToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.resquestList)
   @JoinColumn({ name: 'teacher_user_code', referencedColumnName: 'userCode' })
@@ -59,11 +63,14 @@ export class RequestInfo extends BaseEntity {
 
   @OneToMany(
     (type) => RequestMember,
-    (requestMember) => requestMember.requestInfo,
+    (requestMember) => requestMember.requestCode,
     {
       eager: true,
     },
   )
+  @JoinColumn({
+    name: 'request_code',
+  })
   requestMembers: RequestMember[];
 
   @Column({
