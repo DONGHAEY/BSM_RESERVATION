@@ -14,5 +14,6 @@ import { RoomService } from './room.service';
   ],
   controllers: [RoomController],
   providers: [RoomService],
+  exports: [RoomService],
 })
 export class RoomModule {}

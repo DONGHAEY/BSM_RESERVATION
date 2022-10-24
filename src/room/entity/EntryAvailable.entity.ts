@@ -37,7 +37,7 @@ export class EntryAvailable extends BaseEntity {
     name: 'day',
     type: 'int',
   })
-  day: number; //요일
+  day: number; //요일 1-월, 2-화, 3-수, 4-목, 5-금
 
   @Column({
     name: 'open_at',

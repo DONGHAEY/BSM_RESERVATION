@@ -61,4 +61,12 @@ export class RoomService {
       loadEagerRelations: loadEntryAvailableList,
     });
   }
+
+  async getEntryAvailableInfoBycode(entryAvailableCode: number) {
+    return await this.entryAvailableRepository.findOne({
+      where: {
+        entryAvailableCode,
+      },
+    });
+  }
 }

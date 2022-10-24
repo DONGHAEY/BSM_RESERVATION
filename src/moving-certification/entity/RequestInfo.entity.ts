@@ -28,6 +28,11 @@ export class RequestInfo extends BaseEntity {
   })
   entryAvailableCode: number;
 
+  @Column({
+    name: 'date',
+  })
+  date: Date;
+
   /*/ ********* Entry Info를 JOIN하는 부분 ********* /*/
   @ManyToOne(
     (type) => EntryAvailable,
