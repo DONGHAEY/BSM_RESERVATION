@@ -22,28 +22,10 @@ export class RequestInfo extends BaseEntity {
   })
   requestCode: number;
 
-  /*/ ********* Entry Available Entity의 Primary Keys ********* /*/
   @Column({
-    name: 'room_code',
-    type: 'int',
+    name: 'entry_available_code',
   })
-  roomCode: number;
-
-  @Column({
-    //요일
-    name: 'day',
-    type: 'int',
-  })
-  day: number;
-
-  @Column({
-    name: 'open_at',
-    type: 'varchar',
-    length: 4,
-  })
-  openAt: string;
-
-  /*/ ********* Entry Available Entity의 Primary Keys ********* /*/
+  entryAvailableCode: number;
 
   /*/ ********* Entry Info를 JOIN하는 부분 ********* /*/
   @ManyToOne(
@@ -53,11 +35,9 @@ export class RequestInfo extends BaseEntity {
       onDelete: 'CASCADE',
     },
   )
-  @JoinColumn([
-    { name: 'room_code', referencedColumnName: 'roomCode' },
-    { name: 'day', referencedColumnName: 'day' },
-    { name: 'open_at', referencedColumnName: 'openAt' },
-  ])
+  @JoinColumn({
+    name: 'entry_available_code',
+  })
   entryAvailableInfo: EntryAvailable;
   /*/ ********* Entry Info를 JOIN하는 부분 ********* /*/
 
