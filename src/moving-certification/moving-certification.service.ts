@@ -1,15 +1,26 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RequestInfo } from './entity/RequestInfo.entity';
 import { Repository } from 'typeorm';
 import { RequestMember } from './entity/RequestMember.entity';
 import { RoomService } from 'src/room/room.service';
 import { RequestReservationDto } from 'src/room/dto/requestReservation.dto';
+import { UserService } from 'src/user/user.service';
+import BsmOauth, { BsmOauthUserRole } from 'bsm-oauth';
+import { User } from 'src/user/entity/User.entity';
+import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
+import { InCharge } from 'src/user/types/InCharge.type';
 
 @Injectable()
 export class MovingCertificationService {
   constructor(
     private roomService: RoomService,
+    private userService: UserService,
     @InjectRepository(RequestInfo)
     private requestInfoRepository: Repository<RequestInfo>,
   ) {}
@@ -18,13 +29,12 @@ export class MovingCertificationService {
   // 1. 요청하기 기능
   async requestRoom(request: RequestReservationDto) {
     // 1-1 요청하는 사항의 시간대가 사용중인지, 예약이 되어있는지 확인한다.
-
     const todayDate = new Date();
-    const requestInfo = await this.getRequestBycodeAndDate(
+    const isRequestInfo = await this.getRequestBycodeAndDate(
       request.entryAvailableCode,
       todayDate,
     );
-    if (requestInfo) {
+    if (isRequestInfo) {
       throw new HttpException(
         '이미 예약이 된 항목입니다.',
         HttpStatus.BAD_GATEWAY,
@@ -41,11 +51,52 @@ export class MovingCertificationService {
       );
     }
     // 2. 함께하고자 하는 학생들이 모두 학생인지 확인한다.
-    // 3. 학생이 현재 사용하고자 하는 시간대가 어떤 타입의 선생님에게 요청해야하는지 확인한다.
+    request.userCodeList.map(async (userCode) => {
+      const user: User = await this.userService.getUserBycode(userCode);
+      if (user.role !== BsmOauthUserRole.STUDENT) {
+        throw new HttpException(
+          `${userCode} user is not Student`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    });
+    //학생수가 입장가능 정보의 최소인원, 최대인원을 만족하는지 확인한다.
+    const numOfMember = request.userCodeList.length;
+
+    if (entryAvailable.minOcc > numOfMember) {
+      throw new HttpException(
+        `최소인원을 충족해야합니다 ${
+          entryAvailable.minOcc - numOfMember
+        }명이 더 필요합니다`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (entryAvailable.maxOcc < numOfMember) {
+      throw new HttpException(
+        `최대 인원을 만족해야합니다 ${
+          numOfMember - entryAvailable.maxOcc
+        }명이 더 줄어야합니다`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const TeacherList: TeacherInfo[] = await this.findRequestTeachers(
+      entryAvailable.reqTo,
+      request.userCodeList,
+    );
+
+    // 3. 학생이 현재 사용하고자 하는 항목이 어떤 타입의 선생님에게 요청해야하는지 확인한다.
+
     // 4. 요청해야하는 선생님 타입에 따라 요청 할 특정 선생님 정보를 알아낸다. (예 : 자습담당 선생님에게 요청해야하면 오늘 자습담당 선생님에게 요청을 보낸다.)
+
     // 5. 선생님에게 소켓과 web push 를통해서, 알림을 보내고,
     // 6. 요청 사항 table을 DB에 저장한다.
   }
+
+  private async findRequestTeachers(
+    inChargeType: InCharge,
+    userCodeList: number[],
+  ): Promise<any> {}
+
   private async getRequestBycodeAndDate(code: number, date: Date) {
     return await this.requestInfoRepository.save({
       requestCode: code,
