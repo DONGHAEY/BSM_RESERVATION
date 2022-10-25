@@ -50,7 +50,7 @@ export class RequestInfo extends BaseEntity {
   @PrimaryColumn({
     name: 'request_at',
     type: 'datetime',
-    default: 'now()',
+    default: () => 'CURRENT_TIMESTAMP',
   })
   requestWhen: Date; //언제 요청했는지
 
