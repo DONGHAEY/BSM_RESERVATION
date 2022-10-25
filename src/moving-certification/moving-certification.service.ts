@@ -15,6 +15,8 @@ import BsmOauth, { BsmOauthUserRole } from 'bsm-oauth';
 import { User } from 'src/user/entity/User.entity';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { InCharge } from 'src/user/types/InCharge.type';
+import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
+import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
 
 @Injectable()
 export class MovingCertificationService {
@@ -79,23 +81,58 @@ export class MovingCertificationService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    // 3. 학생이 현재 사용하고자 하는 항목이 어떤 타입의 선생님에게 요청해야하는지 확인한다.
     const TeacherList: TeacherInfo[] = await this.findRequestTeachers(
-      entryAvailable.reqTo,
+      entryAvailable,
       request.userCodeList,
     );
+    //요청사항을 저장
+    // 요청하는 학생들을 저장
+    // 요청받는 선생님을 저장
+    // 요청 정보를 저장
+    // const savedRequest = await this.requestInfoRepository.save({
 
-    // 3. 학생이 현재 사용하고자 하는 항목이 어떤 타입의 선생님에게 요청해야하는지 확인한다.
-
-    // 4. 요청해야하는 선생님 타입에 따라 요청 할 특정 선생님 정보를 알아낸다. (예 : 자습담당 선생님에게 요청해야하면 오늘 자습담당 선생님에게 요청을 보낸다.)
-
-    // 5. 선생님에게 소켓과 web push 를통해서, 알림을 보내고,
-    // 6. 요청 사항 table을 DB에 저장한다.
+    // });
+    //알림을 보낸다
   }
 
   private async findRequestTeachers(
-    inChargeType: InCharge,
+    entryAvailable: EntryAvailable,
     userCodeList: number[],
-  ): Promise<any> {}
+  ): Promise<any> {
+    let teacherList: TeacherInfo[] = []; //
+    if (entryAvailable.reqTo === InCharge.SELFSTUDYTIME) {
+      //SELFSTUDY TIME 담당 선생님인 경우
+      let studentGradeList: number[] = [];
+      studentGradeList = [...new Set(userCodeList)]; // 학생들의 중복제거 된 학년 리스트
+      studentGradeList.map(async (grade) => {
+        const teacher = await this.userService.findSelfStudyTimeTeacher(
+          grade,
+          entryAvailable.day,
+          entryAvailable.date,
+        );
+        if (teacher) {
+          //서비스 초기 단계 서비스 진행위해 선생님 한 분 이라도 있으면 진행 할 수 있도록 한다.
+          teacherList.push(teacher);
+        }
+      });
+    }
+    if (entryAvailable.reqTo === InCharge.HOMEROOM) {
+      throw new HttpException('준비 중 입니다', HttpStatus.AMBIGUOUS);
+    }
+    if (entryAvailable.reqTo === InCharge.DORMITORY) {
+      throw new HttpException('준비 중 입니다', HttpStatus.AMBIGUOUS);
+    }
+    if (!teacherList.length) {
+      throw new HttpException(
+        '요청을 받을 수 있는 선생님이 한분도 없습니다.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return teacherList;
+  }
+
+  private async findTeacher() {}
 
   private async getRequestBycodeAndDate(code: number, date: Date) {
     return await this.requestInfoRepository.save({

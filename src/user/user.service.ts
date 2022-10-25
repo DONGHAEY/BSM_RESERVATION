@@ -113,6 +113,24 @@ export class UserService {
     return inchargeInfo;
   }
 
+  /////
+  async findSelfStudyTimeTeacher(
+    inChargeGrade: number,
+    day: number,
+    date: Date,
+  ) {
+    const { teacher } = await this.selfStudyTimeRepository.findOne({
+      where: {
+        day: date ? null : day,
+        date: date ? date : null,
+        gradeNo: inChargeGrade,
+      },
+      relations: ['teacher'],
+    });
+    return teacher;
+  }
+  /////
+
   async saveUser(
     user: StudentResource | TeacherResource,
     token: string,

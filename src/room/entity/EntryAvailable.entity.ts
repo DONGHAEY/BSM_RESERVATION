@@ -40,6 +40,13 @@ export class EntryAvailable extends BaseEntity {
   day: number; //요일 1-월, 2-화, 3-수, 4-목, 5-금
 
   @Column({
+    name: 'date',
+    type: 'date',
+    nullable: true,
+  })
+  date: Date | null;
+
+  @Column({
     name: 'open_at',
     type: 'varchar', //0800 | 08시 00분 시작시간이 겹칠 수 없기 때문에 Primary를 주었다
     length: 4,
