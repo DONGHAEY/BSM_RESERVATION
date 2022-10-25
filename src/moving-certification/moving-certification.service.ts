@@ -17,6 +17,7 @@ import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { InCharge } from 'src/user/types/InCharge.type';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
+import { ResponseMember } from './entity/ResponseMember.entity';
 
 @Injectable()
 export class MovingCertificationService {
@@ -25,6 +26,10 @@ export class MovingCertificationService {
     private userService: UserService,
     @InjectRepository(RequestInfo)
     private requestInfoRepository: Repository<RequestInfo>,
+    @InjectRepository(RequestMember)
+    private requestMemberRepository: Repository<RequestMember>,
+    @InjectRepository(ResponseMember)
+    private responseMemberRepository: Repository<ResponseMember>,
   ) {}
 
   //만들어야할 메서드 정리
@@ -57,7 +62,7 @@ export class MovingCertificationService {
       const user: User = await this.userService.getUserBycode(userCode);
       if (user.role !== BsmOauthUserRole.STUDENT) {
         throw new HttpException(
-          `${userCode} user is not Student`,
+          `${userCode} user는 학생이 아니어서 예약 할 수 없습니다.`,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -82,17 +87,28 @@ export class MovingCertificationService {
       );
     }
     // 3. 학생이 현재 사용하고자 하는 항목이 어떤 타입의 선생님에게 요청해야하는지 확인한다.
-    const TeacherList: TeacherInfo[] = await this.findRequestTeachers(
+    const teacherList: TeacherInfo[] = await this.findRequestTeachers(
       entryAvailable,
       request.userCodeList,
     );
     //요청사항을 저장
+    const { requestCode } = await this.requestInfoRepository.save({
+      entryAvailableCode: request.entryAvailableCode,
+    });
     // 요청하는 학생들을 저장
+    request.userCodeList.map(async (userCode) => {
+      await this.requestMemberRepository.save({
+        requestCode,
+        userCode,
+      });
+    });
     // 요청받는 선생님을 저장
-    // 요청 정보를 저장
-    // const savedRequest = await this.requestInfoRepository.save({
-
-    // });
+    teacherList.map(async (teacher) => {
+      await this.responseMemberRepository.save({
+        requestCode,
+        userCode: teacher.userCode,
+      });
+    });
     //알림을 보낸다
   }
 
@@ -131,8 +147,6 @@ export class MovingCertificationService {
     }
     return teacherList;
   }
-
-  private async findTeacher() {}
 
   private async getRequestBycodeAndDate(code: number, date: Date) {
     return await this.requestInfoRepository.save({

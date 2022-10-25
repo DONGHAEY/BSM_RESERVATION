@@ -50,6 +50,7 @@ export class RequestInfo extends BaseEntity {
   @PrimaryColumn({
     name: 'request_at',
     type: 'datetime',
+    default: 'now()',
   })
   requestWhen: Date; //언제 요청했는지
 
@@ -82,6 +83,7 @@ export class RequestInfo extends BaseEntity {
     name: 'is_acc',
     enum: isAccType,
     type: 'enum',
+    default: isAccType.WATING,
   })
   isAcc: isAccType;
 }
