@@ -1,10 +1,14 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { BsmOauthUserRole } from 'bsm-oauth';
 import { Roles } from 'src/auth/decorator/roles.decorator';
+import JwtAuthGuard from 'src/auth/guards/auth.guard';
+import { levelGuard } from 'src/auth/guards/level.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { RequestReservationDto } from 'src/room/dto/requestReservation.dto';
 import { MovingCertificationService } from './moving-certification.service';
 
 @Controller('moving-certification')
+@UseGuards(JwtAuthGuard, levelGuard, RolesGuard)
 export class MovingCertificationController {
   constructor(private certificationService: MovingCertificationService) {}
 

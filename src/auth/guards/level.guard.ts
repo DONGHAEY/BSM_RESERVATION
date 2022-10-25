@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { User } from 'src/user/entity/User.entity';
 import { Level } from 'src/user/types/Level.type';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class levelGuard implements CanActivate {
@@ -20,7 +21,6 @@ export class levelGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     const user = request.user as User;
-
     if (user.level >= level) {
       return true;
     }

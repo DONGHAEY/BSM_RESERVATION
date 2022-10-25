@@ -34,7 +34,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(req: Request, user: User): Promise<User> {
     if (user.userCode) {
-      return user;
+      const userInfo: User = await this.userService.getUserBycode<User>(
+        user.userCode,
+      );
+      return userInfo;
     }
     const { refreshToken } = this.jwtService.verify(
       req?.cookies?.refreshToken,

@@ -22,6 +22,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Query('code') authCode: string,
   ) {
+    // return authCode;
     return this.authService.oauthBsm(res, authCode);
   }
   @Get('logout')

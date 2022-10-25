@@ -22,7 +22,7 @@ import { RoomService } from './room.service';
 import { RoomType } from './type/Room.type';
 
 @Controller('room')
-// @UseGuards(JwtAuthGuard, levelGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, levelGuard, RolesGuard)
 export class RoomController {
   constructor(private roomService: RoomService) {}
 
