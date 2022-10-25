@@ -18,6 +18,7 @@ import { InCharge } from 'src/user/types/InCharge.type';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
 import { ResponseMember } from './entity/ResponseMember.entity';
+import { isAccType } from './types/isAcc.type';
 
 @Injectable()
 export class MovingCertificationService {
@@ -33,7 +34,7 @@ export class MovingCertificationService {
   ) {}
 
   //만들어야할 메서드 정리
-  // 1. 요청하기 기능
+  // 1. 요청하기 기능 //
   async requestRoom(request: RequestReservationDto) {
     // 1-1 요청하는 사항의 시간대가 사용중인지, 예약이 되어있는지 확인한다.
     const todayDate = new Date();
@@ -41,9 +42,9 @@ export class MovingCertificationService {
       request.entryAvailableCode,
       todayDate,
     );
-    if (isRequestInfo) {
+    if (isRequestInfo.isAcc === isAccType.ALLOWED || isAccType.WATING) {
       throw new HttpException(
-        '이미 예약이 된 항목입니다.',
+        '이미 예약이 되었거나 대기중인 항목입니다.',
         HttpStatus.BAD_GATEWAY,
       );
     }
