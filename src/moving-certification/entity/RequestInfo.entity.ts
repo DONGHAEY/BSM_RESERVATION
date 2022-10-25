@@ -16,7 +16,7 @@ import { isAccType } from '../types/isAcc.type';
 import { RequestMember } from './RequestMember.entity';
 import { ResponseMember } from './ResponseMember.entity';
 
-@Entity('request_info')
+@Entity('request')
 export class RequestInfo extends BaseEntity {
   @PrimaryGeneratedColumn({
     name: 'request_code',
@@ -29,61 +29,39 @@ export class RequestInfo extends BaseEntity {
   entryAvailableCode: number;
 
   @Column({
-    name: 'date',
-  })
-  date: Date;
-
-  /*/ ********* Entry Info를 JOIN하는 부분 ********* /*/
-  @ManyToOne(
-    (type) => EntryAvailable,
-    (entryAvailable) => entryAvailable.requestInfoList,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
-  @JoinColumn({
-    name: 'entry_available_code',
-  })
-  entryAvailableInfo: EntryAvailable;
-  /*/ ********* Entry Info를 JOIN하는 부분 ********* /*/
-
-  @PrimaryColumn({
-    name: 'request_at',
+    name: 'request_when',
     type: 'datetime',
     default: () => 'CURRENT_TIMESTAMP',
   })
   requestWhen: Date; //언제 요청했는지
 
-  @OneToMany(
-    (type) => ResponseMember,
-    (responseMember) => responseMember.requestCode,
-  )
-  @JoinColumn({
-    name: 'request_code',
-  })
-  teacherMembers: ResponseMember[]; //요청받는 선생님의 유저 코드이다.
-
-  @OneToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.resquestList)
-  @JoinColumn({ name: 'teacher_user_code', referencedColumnName: 'userCode' })
-  teacherInfo: TeacherInfo;
-
-  @OneToMany(
-    (type) => RequestMember,
-    (requestMember) => requestMember.requestCode,
-    {
-      eager: true,
-    },
-  )
-  @JoinColumn({
-    name: 'request_code',
-  })
-  requestMembers: RequestMember[];
-
   @Column({
     name: 'is_acc',
-    enum: isAccType,
     type: 'enum',
+    enum: isAccType,
     default: isAccType.WATING,
   })
   isAcc: isAccType;
+
+  @OneToMany(
+    (type) => ResponseMember,
+    (responseMember) => responseMember.requestInfo,
+  )
+  responseMembers: ResponseMember[]; //요청받는 선생님의 유저들 이다.
+
+  @OneToMany(
+    (type) => RequestMember,
+    (requestMember) => requestMember.requestInfo,
+  )
+  requestMembers: RequestMember[]; //요청하는 학생들의 유저들 이다.
+
+  @ManyToOne(
+    (type) => EntryAvailable,
+    (entryAvailable) => entryAvailable.requestInfoList,
+    { onDelete: 'CASCADE' },
+  )
+  @JoinColumn({
+    name: 'entry_available_code',
+  })
+  entryAvailableInfo: EntryAvailable;
 }

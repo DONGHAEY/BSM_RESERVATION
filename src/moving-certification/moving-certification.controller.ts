@@ -16,7 +16,7 @@ export class MovingCertificationController {
   @Post('/request')
   @Roles(BsmOauthUserRole.STUDENT)
   async requestToTeacher(@Body() requestReservationDto: RequestReservationDto) {
-    return await this.certificationService.requestRoom(requestReservationDto);
+    // return await this.certificationService.requestRoom(requestReservationDto);
     // 학생이 이석 요청을 한다, 이 API를 사용한다.
   }
 

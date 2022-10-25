@@ -1,4 +1,5 @@
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
+import { User } from 'src/user/entity/User.entity';
 import {
   Entity,
   BaseEntity,
@@ -23,11 +24,19 @@ export class RequestMember extends BaseEntity {
   })
   userCode: number;
 
-  @ManyToOne((type) => StudentInfo, (studentInfo) => studentInfo.requestList, {
-    eager: true,
-  })
+  @ManyToOne((type) => StudentInfo, (studentInfo) => studentInfo.requestList)
   @JoinColumn({
     name: 'user_code',
   })
   studentInfo: StudentInfo;
+
+  @ManyToOne(
+    (type) => RequestInfo,
+    (requestInfo) => requestInfo.requestMembers,
+    {
+      eager: true,
+    },
+  )
+  @JoinColumn()
+  requestInfo: RequestInfo;
 }

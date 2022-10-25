@@ -11,7 +11,8 @@ import {
 } from 'typeorm';
 import { InCharge } from 'src/user/types/InCharge.type';
 import { Room } from './Room.entity';
-import { RequestInfo } from '../../moving-certification/entity/RequestInfo.entity';
+import { RequestInfo } from 'src/moving-certification/entity/RequestInfo.entity';
+// import { RequestInfo } from '../../moving-certification/entity/RequestInfo.entity';
 
 @Entity('entry_available')
 @Index(['roomCode', 'day', 'openAt'], { unique: true })

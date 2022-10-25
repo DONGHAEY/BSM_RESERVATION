@@ -1,5 +1,6 @@
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { RequestInfo } from './RequestInfo.entity';
 
 @Entity()
 export class ResponseMember {
@@ -13,11 +14,20 @@ export class ResponseMember {
     type: 'int',
   })
   userCode: number;
-  @ManyToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.userCode, {
-    eager: true,
-  })
+
+  @ManyToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.requestList)
   @JoinColumn({
     name: 'user_code',
   })
   teacherInfo: TeacherInfo;
+
+  @ManyToOne(
+    (type) => RequestInfo,
+    (requestInfo) => requestInfo.responseMembers,
+    {
+      eager: true,
+    },
+  )
+  @JoinColumn()
+  requestInfo: RequestInfo;
 }
