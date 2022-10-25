@@ -7,6 +7,7 @@ import {
   JoinColumn,
   OneToMany,
   Index,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { InCharge } from 'src/user/types/InCharge.type';
 import { Room } from './Room.entity';
@@ -15,7 +16,7 @@ import { RequestInfo } from '../../moving-certification/entity/RequestInfo.entit
 @Entity('entry_available')
 @Index(['roomCode', 'day', 'openAt'], { unique: true })
 export class EntryAvailable extends BaseEntity {
-  @PrimaryColumn({
+  @PrimaryGeneratedColumn({
     name: 'entry_available_code',
     type: 'int',
   })
