@@ -57,8 +57,7 @@ export class RequestInfo extends BaseEntity {
 
   @ManyToOne(
     (type) => EntryAvailable,
-    (entryAvailable) => entryAvailable.requestInfoList,
-    { onDelete: 'CASCADE' },
+    (entryAvailable) => entryAvailable.requestedList,
   )
   @JoinColumn({
     name: 'entry_available_code',

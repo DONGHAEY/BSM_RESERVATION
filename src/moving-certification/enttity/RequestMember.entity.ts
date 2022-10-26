@@ -24,19 +24,9 @@ export class RequestMember extends BaseEntity {
   })
   userCode: number;
 
-  @ManyToOne((type) => StudentInfo, (studentInfo) => studentInfo.requestList)
+  @ManyToOne((type) => RequestInfo, (requestInfo) => requestInfo.requestMembers)
   @JoinColumn({
-    name: 'user_code',
+    name: 'request_code',
   })
-  studentInfo: StudentInfo;
-
-  @ManyToOne(
-    (type) => RequestInfo,
-    (requestInfo) => requestInfo.requestMembers,
-    {
-      eager: true,
-    },
-  )
-  @JoinColumn()
   requestInfo: RequestInfo;
 }

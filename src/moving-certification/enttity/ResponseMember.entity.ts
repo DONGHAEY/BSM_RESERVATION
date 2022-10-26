@@ -15,19 +15,12 @@ export class ResponseMember {
   })
   userCode: number;
 
-  @ManyToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.requestList)
-  @JoinColumn({
-    name: 'user_code',
-  })
-  teacherInfo: TeacherInfo;
-
   @ManyToOne(
     (type) => RequestInfo,
     (requestInfo) => requestInfo.responseMembers,
-    {
-      eager: true,
-    },
   )
-  @JoinColumn()
+  @JoinColumn({
+    name: 'request_code',
+  })
   requestInfo: RequestInfo;
 }

@@ -1,6 +1,5 @@
 import { BsmOauthUserRole } from 'bsm-oauth';
-import { ResponseMember } from 'src/moving-certification/entity/ResponseMember.entity';
-// import { RequestInfo } from 'src/moving-certification/entity/RequestInfo.entity';
+import { ResponseMember } from 'src/moving-certification/enttity/ResponseMember.entity';
 import {
   BaseEntity,
   Column,
@@ -25,14 +24,8 @@ export class TeacherInfo extends User {
   userCode: number;
 
   @OneToMany((type) => InChargeInfo, (inChargeInfo) => inChargeInfo.teacher, {
-    eager: true,
     cascade: true,
+    eager: true,
   })
   inCharged: InChargeInfo[];
-
-  @OneToMany(
-    (type) => ResponseMember,
-    (responseMember) => responseMember.teacherInfo,
-  )
-  requestList: ResponseMember[];
 }
