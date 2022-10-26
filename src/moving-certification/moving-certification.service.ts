@@ -37,37 +37,8 @@ export class MovingCertificationService {
   // 1. 요청하기 기능 //
   async requestRoom(request: RequestReservationDto) {
     const todayDate: Date = new Date();
-    // 1-1 요청하는 사항의 시간대가 사용중인지, 예약이 되어있는지 확인한다.
-    console.log('되는지 확인1');
-    const isRequestInfo = await this.getLastRequestByentryAvailablecode(
-      request.entryAvailableCode,
-    ); //요청 했었던 모든 정보중 최신 정보를 불러온다.
-    console.log('되는지 확인2');
-    // 만약 그항목에 대한 다른 요청이 있었다면, 승인이 되었는지의 여부를 확인한다.
-    if (isRequestInfo && isRequestInfo.isAcc === isAccType.ALLOWED) {
-      throw new HttpException(
-        '이미 예약이 승인 완료된 항목입니다.',
-        HttpStatus.BAD_GATEWAY,
-      );
-    }
-    console.log('되는지 확인3');
-    // 만약 그 항목에 대한 대기중인 다른 최근 요청이 있었다면, 그 최근요청이 10분이 지났는지 확인한다.
-    if (isRequestInfo && isRequestInfo.isAcc === isAccType.WATING) {
-      if (
-        !(
-          todayDate.getTime() - isRequestInfo.requestWhen.getTime() >
-          60 * 60 * 10
-        )
-      ) {
-        //최근에 있었던 요청이 대기상태로 10분이 지나지 않은 경우
-        throw new HttpException(
-          '이미 예약이 누군가에 의해 대기중인 항목입니다.',
-          HttpStatus.BAD_GATEWAY,
-        );
-      }
-    }
-    console.log('되는지 확인4');
-    // 1. 학생이 이석 요청 시, 요청하는 날짜와 요청하는 사항의 날짜가 일치하는지 확인한다.
+
+    // 1. 학생이 이석 요청 시, 요청하는 항목이 존재하는지, 그리고 요청하는 날짜와 요청하는 사항의 날짜가 일치하는지 확인한다.
     const entryAvailable = await this.roomService.getEntryAvailableInfoBycode(
       request.entryAvailableCode,
     );
@@ -80,18 +51,42 @@ export class MovingCertificationService {
         HttpStatus.BAD_GATEWAY,
       );
     }
-    //또 예약하는 항목이 시간이 이미 지나간 항목은 아닌지도 확인해야한다.
-    console.log('되는지 확인5');
-    // 2. 함께하고자 하는 학생들이 모두 학생인지 확인한다.
-    const studentList: StudentInfo[] = await this.userService.getUserListBycode(
-      request.userCodeList,
-    );
+    // 1-1 요청하는 사항의 시간대가 사용중인지, 예약이 되어있는지 확인한다.
+    const isRequestInfo = await this.getLastRequestByentryAvailablecode(
+      request.entryAvailableCode,
+    ); //요청 했었던 모든 정보중 최신 정보를 불러온다.
+    // 만약 그항목에 대한 다른 요청이 있었다면, 승인이 되었는지의 여부를 확인한다.
+    if (isRequestInfo && isRequestInfo.isAcc === isAccType.ALLOWED) {
+      throw new HttpException(
+        '이미 예약이 승인 완료된 항목입니다.',
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+    // 만약 그 항목에 대한 대기중인 다른 최근 요청이 있었다면, 그 최근요청이 10분이 지났는지 확인한다.
+    if (isRequestInfo && isRequestInfo.isAcc === isAccType.WATING) {
+      if (
+        !(
+          todayDate.getTime() - isRequestInfo.requestWhen.getTime() >
+          1000 * 60 * 60 * 10
+        )
+      ) {
+        //최근에 있었던 요청이 대기상태로 10분이 지나지 않은 경우
+        throw new HttpException(
+          '이미 예약이 누군가에 의해 대기중인 항목입니다.',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+    }
+    //***********//또 예약하는 항목이 시간이 이미 지나간 항목은 아닌지도 확인해야한다.//***********//
+    const studentList: StudentInfo[] =
+      await this.userService.getUserListBycode<StudentInfo>(
+        request.userCodeList,
+      );
     await this.userService.checkUserListRole(
       studentList,
       BsmOauthUserRole.STUDENT,
     );
-    console.log('되는지 확인6');
-    //학생수가 입장가능 정보의 최소인원, 최대인원을 만족하는지 확인한다.
+    //학생수가 입장가능 정보의 최소인원, 최대인원을 만족하는지 확인해야한다.
     const numOfMember = studentList.length;
 
     if (entryAvailable.minOcc > numOfMember) {
@@ -110,13 +105,11 @@ export class MovingCertificationService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    console.log('되는지 확인7');
     // 3. 학생이 현재 사용하고자 하는 항목이 어떤 타입의 선생님에게 요청해야하는지 확인한다.
     const teacherList: TeacherInfo[] = await this.findRequestTeachers(
       entryAvailable,
       studentList,
     );
-    console.log('dd');
     //요청사항을 저장
     const { requestCode } = await this.requestInfoRepository.save({
       entryAvailableCode: request.entryAvailableCode,
