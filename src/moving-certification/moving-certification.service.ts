@@ -37,58 +37,34 @@ export class MovingCertificationService {
   // 1. 요청하기 기능 //
   async requestRoom(request: RequestReservationDto) {
     const todayDate: Date = new Date();
-
-    // 1. 학생이 이석 요청 시, 요청하는 항목이 존재하는지, 그리고 요청하는 날짜와 요청하는 사항의 날짜가 일치하는지 확인한다.
+    // 1. 학생이 이석 요청 시, 요청하는 항목이 존재하는지 확인한다.
     const entryAvailable = await this.roomService.getEntryAvailableInfoBycode(
       request.entryAvailableCode,
     );
     if (!entryAvailable) {
       throw new HttpException('그런 항목은 없습니다', HttpStatus.NOT_FOUND);
     }
+    //요청하는 사항이 있다면, 오늘 요일과 일치하는지 확인한다. //
     if (entryAvailable.day !== todayDate.getDay()) {
       throw new HttpException(
         '오늘 항목만 예약 할 수 있습니다',
         HttpStatus.BAD_GATEWAY,
       );
     }
-    // 1-1 요청하는 사항의 시간대가 사용중인지, 예약이 되어있는지 확인한다.
-    const isRequestInfo = await this.getLastRequestByentryAvailablecode(
-      request.entryAvailableCode,
-    ); //요청 했었던 모든 정보중 최신 정보를 불러온다.
-    // 만약 그항목에 대한 다른 요청이 있었다면, 승인이 되었는지의 여부를 확인한다.
-    if (isRequestInfo && isRequestInfo.isAcc === isAccType.ALLOWED) {
-      throw new HttpException(
-        '이미 예약이 승인 완료된 항목입니다.',
-        HttpStatus.BAD_GATEWAY,
-      );
-    }
-    // 만약 그 항목에 대한 대기중인 다른 최근 요청이 있었다면, 그 최근요청이 10분이 지났는지 확인한다.
-    if (isRequestInfo && isRequestInfo.isAcc === isAccType.WATING) {
-      if (
-        !(
-          todayDate.getTime() - isRequestInfo.requestWhen.getTime() >
-          1000 * 60 * 60 * 10
-        )
-      ) {
-        //최근에 있었던 요청이 대기상태로 10분이 지나지 않은 경우
-        throw new HttpException(
-          '이미 예약이 누군가에 의해 대기중인 항목입니다.',
-          HttpStatus.BAD_GATEWAY,
-        );
-      }
-    }
-    //***********//또 예약하는 항목이 시간이 이미 지나간 항목은 아닌지도 확인해야한다.//***********//
+    // 요청하는 사항의 항목이 사용중인지, 예약이 되어있는지 확인한다. //
+    await this.checkExsistRequestInfo(request.entryAvailableCode);
+    // 받은 유저 코드 리스트를 통해 유저정보를 리스트로 불러온다. //
     const studentList: StudentInfo[] =
       await this.userService.getUserListBycode<StudentInfo>(
         request.userCodeList,
       );
+    // 요청하는 유저 리스트의 유저 역할이 모두 학생인지 확인한다. //
     await this.userService.checkUserListRole(
       studentList,
       BsmOauthUserRole.STUDENT,
     );
     //학생수가 입장가능 정보의 최소인원, 최대인원을 만족하는지 확인해야한다.
     const numOfMember = studentList.length;
-
     if (entryAvailable.minOcc > numOfMember) {
       throw new HttpException(
         `최소인원을 충족해야합니다 ${
@@ -142,22 +118,13 @@ export class MovingCertificationService {
   ): Promise<any> {
     let teacherList = []; //서비스 초기 단계 서비스 진행위해 선생님 한 분 이라도 있으면 진행 할 수 있도록 한다.
     if (entryAvailable.reqTo === InCharge.SELFSTUDYTIME) {
-      //SELFSTUDY TIME 담당 선생님인 경우
       let studentGradeList: number[] = await Promise.all(
         studentList.map(async (student) => student.grade),
       );
-      studentGradeList = [...new Set(studentGradeList)]; // 학생들의 중복제거 된 학년 리스트
-      teacherList = await Promise.all(
-        studentGradeList.map(async (grade) => {
-          const teacher = await this.userService.findSelfStudyTimeTeacher(
-            grade,
-            entryAvailable.day,
-            entryAvailable.date,
-          );
-          if (teacher) {
-            return teacher;
-          }
-        }),
+      studentGradeList = [...new Set(studentGradeList)]; // 학생들 학년이 중복제거 된 학년 리스트이다.
+      teacherList = await this.findSelfStudyTimeTeachers(
+        entryAvailable,
+        studentGradeList,
       );
     }
     if (entryAvailable.reqTo === InCharge.HOMEROOM) {
@@ -173,6 +140,59 @@ export class MovingCertificationService {
       );
     }
     return teacherList;
+  }
+
+  private async findSelfStudyTimeTeachers(
+    entryAvailable: EntryAvailable,
+    studentGradeList: number[],
+  ) {
+    //SELFSTUDY TIME 담당 선생님인 경우
+    return await Promise.all(
+      studentGradeList.map(async (grade) => {
+        const teacher = await this.userService.findSelfStudyTimeTeacher(
+          grade,
+          entryAvailable.day,
+          entryAvailable.date,
+        );
+        if (teacher) {
+          return teacher;
+        }
+      }),
+    );
+  }
+
+  private async checkExsistRequestInfo(
+    entryAvailableCode: number,
+  ): Promise<void> {
+    const todayDate = new Date();
+    const isRequestInfo = await this.getLastRequestByentryAvailablecode(
+      entryAvailableCode,
+    ); //요청 했었던 모든 정보중 최신 정보를 불러온다.
+
+    // 만약 그항목에 대한 다른 요청이 있었다면, 승인이 되었는지의 여부를 확인한다.
+    if (isRequestInfo && isRequestInfo.isAcc === isAccType.ALLOWED) {
+      throw new HttpException(
+        '이미 승인 완료된 항목입니다.',
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+    // 만약 그 항목에 대한 대기중인 다른 최근 요청이 있었다면, 그 최근요청이 10분이 지났는지 확인한다.
+    if (isRequestInfo && isRequestInfo.isAcc === isAccType.WATING) {
+      if (
+        !(
+          todayDate.getTime() - isRequestInfo.requestWhen.getTime() >
+          1000 * 60 * 60 * 10
+        )
+      ) {
+        console.log(todayDate.getTime(), isRequestInfo.requestWhen.getTime());
+        //최근에 있었던 요청이 대기상태로 10분이 지나지 않은 경우
+        throw new HttpException(
+          '이미 예약이 누군가에 의해 대기중인 항목입니다.',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+    }
+    //********* 또 항목 시간이 지금시간과 비교해서 이미 지나간 항목은 아닌지도 확인해야한다. ***********//
   }
 
   private async getLastRequestByentryAvailablecode(entryAvailableCode: number) {
