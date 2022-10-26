@@ -55,7 +55,10 @@ export class RequestInfo extends BaseEntity {
   )
   requestMembers: RequestMember[]; //요청하는 학생들의 유저들 이다.
 
-  @ManyToOne((type) => EntryAvailable)
+  @ManyToOne(
+    (type) => EntryAvailable,
+    (entryAvailable) => entryAvailable.requestedList,
+  )
   @JoinColumn({
     name: 'entry_available_code',
   })
