@@ -71,6 +71,9 @@ export class MovingCertificationService {
     const entryAvailable = await this.roomService.getEntryAvailableInfoBycode(
       request.entryAvailableCode,
     );
+    if (!entryAvailable) {
+      throw new HttpException('그런 항목은 없습니다', HttpStatus.NOT_FOUND);
+    }
     if (entryAvailable.day !== todayDate.getDay()) {
       throw new HttpException(
         '오늘 항목만 예약 할 수 있습니다',
