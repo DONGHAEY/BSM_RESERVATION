@@ -19,15 +19,17 @@ export class Token extends BaseEntity {
   })
   valid: boolean;
 
-  @ManyToOne((type) => User, (user) => user.userCode)
-  @JoinColumn({ name: 'user_code' })
-  user: User;
-
   @Column({
     nullable: false,
     name: 'user_code',
   })
   userCode: number;
+
+  @ManyToOne((type) => User, (user) => user.refereshTokens, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'user_code' })
+  user: User;
 
   @Column({ nullable: false })
   createdAt: Date;

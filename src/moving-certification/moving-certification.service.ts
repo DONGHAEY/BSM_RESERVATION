@@ -80,6 +80,7 @@ export class MovingCertificationService {
         HttpStatus.BAD_GATEWAY,
       );
     }
+    //또 예약하는 항목이 시간이 이미 지나간 항목은 아닌지도 확인해야한다.
     console.log('되는지 확인5');
     // 2. 함께하고자 하는 학생들이 모두 학생인지 확인한다.
     const studentList: StudentInfo[] = await this.userService.getUserListBycode(

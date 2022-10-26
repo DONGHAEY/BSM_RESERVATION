@@ -1,10 +1,12 @@
 import { BsmOauthUserRole } from 'bsm-oauth';
+import { Token } from 'src/auth/entity/token.entity';
 import {
   BaseEntity,
   Column,
   Entity,
   PrimaryColumn,
   TableInheritance,
+  OneToMany,
 } from 'typeorm';
 import { Level } from '../types/Level.type';
 
@@ -64,4 +66,9 @@ export class User extends BaseEntity {
     enum: BsmOauthUserRole,
   })
   role: BsmOauthUserRole; //역할은 학생, 선생님 둘 중 하나를 가진다.
+
+  @OneToMany((type) => Token, (token) => token.user, {
+    cascade: true,
+  })
+  refereshTokens: [];
 }
