@@ -6,22 +6,16 @@ import { RoomModule } from 'src/room/room.module';
 import { MovingCertificationService } from './moving-certification.service';
 import { MovingCertificationController } from './moving-certification.controller';
 import { UserModule } from 'src/user/user.module';
-import { RequestInfo } from './enttity/RequestInfo.entity';
-import { RequestMember } from './enttity/RequestMember.entity';
-import { ResponseMember } from './enttity/ResponseMember.entity';
+import { RequestInfo } from './entity/RequestInfo.entity';
+import { RequestMember } from './entity/RequestMember.entity';
+import { ResponseMember } from './entity/ResponseMember.entity';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 // import { ResponseMember } from './entdity/ResponseMember.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      RequestInfo,
-      RequestMember,
-      ResponseMember,
-      StudentInfo,
-      TeacherInfo,
-    ]),
+    TypeOrmModule.forFeature([RequestInfo, RequestMember, ResponseMember]),
     RoomModule,
     UserModule,
   ],

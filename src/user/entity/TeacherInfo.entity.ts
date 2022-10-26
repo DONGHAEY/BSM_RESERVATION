@@ -1,5 +1,5 @@
 import { BsmOauthUserRole } from 'bsm-oauth';
-import { ResponseMember } from 'src/moving-certification/enttity/ResponseMember.entity';
+import { ResponseMember } from 'src/moving-certification/entity/ResponseMember.entity';
 import {
   BaseEntity,
   Column,

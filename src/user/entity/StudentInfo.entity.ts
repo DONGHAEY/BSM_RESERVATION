@@ -1,5 +1,5 @@
 import { BsmOauthUserRole } from 'bsm-oauth';
-import { RequestMember } from 'src/moving-certification/enttity/RequestMember.entity';
+import { RequestMember } from 'src/moving-certification/entity/RequestMember.entity';
 // import { RequestMember } from 'src/moving-certification/entdity/RequestMember.entity';
 import { Column, ChildEntity, PrimaryColumn, OneToMany } from 'typeorm';
 import { User } from './User.entity';

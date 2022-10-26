@@ -113,6 +113,14 @@ export class UserService {
     return inchargeInfo;
   }
 
+  async getUserListBycode<T>(userCodeList: number[]) {
+    return await Promise.all(
+      userCodeList.map(async (userCode) => {
+        return await this.getUserBycode<T>(userCode);
+      }),
+    );
+  }
+
   /////
   async findSelfStudyTimeTeacher(
     inChargeGrade: number,
@@ -129,7 +137,24 @@ export class UserService {
     });
     return teacher;
   }
-  /////
+
+  async checkUserListRole(userList: User[], role: BsmOauthUserRole) {
+    Promise.all(
+      userList.map(async (user) => {
+        this.checkUserRole(user, role);
+      }),
+    );
+  }
+
+  checkUserRole(user: User, role: BsmOauthUserRole) {
+    if (user.role === role) {
+      return true;
+    }
+    throw new HttpException(
+      `${user.userCode}번 유저는 ${role} 역할이 아닙니다`,
+      HttpStatus.BAD_GATEWAY,
+    );
+  }
 
   async saveUser(
     user: StudentResource | TeacherResource,
