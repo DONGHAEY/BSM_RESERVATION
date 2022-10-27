@@ -19,10 +19,11 @@ import { isAccType } from './types/isAcc.type';
 import { RequestInfo } from './entity/RequestInfo.entity';
 import { RequestMember } from './entity/RequestMember.entity';
 import { ResponseMember } from './entity/ResponseMember.entity';
-
+import { SchedulerRegistry } from '@nestjs/schedule';
 @Injectable()
 export class MovingCertificationService {
   constructor(
+    private schedulerRegistry: SchedulerRegistry,
     private roomService: RoomService,
     private userService: UserService,
     @InjectRepository(RequestInfo)

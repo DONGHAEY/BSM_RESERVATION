@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RoomModule } from './room/room.module';
 import { MovingCertificationModule } from './moving-certification/moving-certification.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TaskModule } from './task/task.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,6 +34,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     AuthModule,
     RoomModule,
     MovingCertificationModule,
+    TaskModule,
   ],
   controllers: [],
   providers: [],
