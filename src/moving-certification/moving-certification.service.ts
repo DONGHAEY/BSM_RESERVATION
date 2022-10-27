@@ -110,13 +110,14 @@ export class MovingCertificationService {
       }),
     );
     //알림을 보낸다
+    // 10분뒤에 스케줄려로 + 승인이 되었는지 확인하고 승인이 되지 않았다면, 거부됨으로 업데이트시킨다 + 문이 열렸는지 안열렸는지 확인한다 열렸다면 승인 그대로두고 열리지 않았다면 거부됨으로 업데이트 시킨다..
   }
 
   private async findRequestTeachers(
     entryAvailable: EntryAvailable,
     studentList: StudentInfo[],
   ): Promise<any> {
-    let teacherList = []; //서비스 초기 단계 서비스 진행위해 선생님 한 분 이라도 있으면 진행 할 수 있도록 한다.
+    let teacherList: TeacherInfo[] = []; //서비스 초기 단계 서비스 진행위해 선생님 한 분 이라도 있으면 진행 할 수 있도록 한다.
     if (entryAvailable.reqTo === InCharge.SELFSTUDYTIME) {
       let studentGradeList: number[] = await Promise.all(
         studentList.map(async (student) => student.grade),
@@ -142,6 +143,7 @@ export class MovingCertificationService {
     return teacherList;
   }
 
+  //이것도 User Service에 둘 수 있다면 두기..! 제발!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   private async findSelfStudyTimeTeachers(
     entryAvailable: EntryAvailable,
     studentGradeList: number[],
@@ -192,7 +194,7 @@ export class MovingCertificationService {
         );
       }
     }
-    //********* 또 항목 시간이 지금시간과 비교해서 이미 지나간 항목은 아닌지도 확인해야한다. ***********//
+    //********* + 또 항목 시간이 지금시간과 비교해서 이미 지나간 항목은 아닌지도 확인해야한다. ***********//
   }
 
   private async getLastRequestByentryAvailablecode(entryAvailableCode: number) {
@@ -201,7 +203,7 @@ export class MovingCertificationService {
         entryAvailableCode,
       },
       order: {
-        requestWhen: 'desc',
+        requestWhen: 'DESC',
       },
     });
   }

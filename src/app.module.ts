@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RoomModule } from './room/room.module';
 import { MovingCertificationModule } from './moving-certification/moving-certification.module';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -12,7 +13,7 @@ import { MovingCertificationModule } from './moving-certification/moving-certifi
       envFilePath: `./env/${process.env.NODE_ENV}.env`,
     }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, ScheduleModule.forRoot()],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         return {
