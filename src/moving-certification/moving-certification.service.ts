@@ -110,7 +110,8 @@ export class MovingCertificationService {
       }),
     );
     //알림을 보낸다
-    // 10분뒤에 스케줄려로 + 승인이 되었는지 확인하고 승인이 되지 않았다면, 거부됨으로 업데이트시킨다 + 문이 열렸는지 안열렸는지 확인한다 열렸다면 승인 그대로두고 열리지 않았다면 거부됨으로 업데이트 시킨다..
+    // 10분뒤에 스케줄려로 + 승인이 되었는지 확인하고 승인이 되지 않았다면, 거부됨으로 업데이트시킨다
+    // 문이 열렸는지 안열렸는지 확인한다 열렸다면 승인 그대로두고 열리지 않았다면 거부됨으로 업데이트 시킨다..
   }
 
   private async findRequestTeachers(
@@ -123,7 +124,7 @@ export class MovingCertificationService {
         studentList.map(async (student) => student.grade),
       );
       studentGradeList = [...new Set(studentGradeList)]; // 학생들 학년이 중복제거 된 학년 리스트이다.
-      teacherList = await this.findSelfStudyTimeTeachers(
+      teacherList = await this.userService.findSelfStudyTimeTeachers(
         entryAvailable,
         studentGradeList,
       );
@@ -141,26 +142,6 @@ export class MovingCertificationService {
       );
     }
     return teacherList;
-  }
-
-  //이것도 User Service에 둘 수 있다면 두기..! 제발!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  private async findSelfStudyTimeTeachers(
-    entryAvailable: EntryAvailable,
-    studentGradeList: number[],
-  ) {
-    //SELFSTUDY TIME 담당 선생님인 경우
-    return await Promise.all(
-      studentGradeList.map(async (grade) => {
-        const teacher = await this.userService.findSelfStudyTimeTeacher(
-          grade,
-          entryAvailable.day,
-          entryAvailable.date,
-        );
-        if (teacher) {
-          return teacher;
-        }
-      }),
-    );
   }
 
   private async checkExsistRequestInfo(
@@ -186,7 +167,6 @@ export class MovingCertificationService {
           1000 * 60 * 60 * 10
         )
       ) {
-        console.log(todayDate.getTime(), isRequestInfo.requestWhen.getTime());
         //최근에 있었던 요청이 대기상태로 10분이 지나지 않은 경우
         throw new HttpException(
           '이미 예약이 누군가에 의해 대기중인 항목입니다.',

@@ -25,6 +25,7 @@ import { HomeRoom } from './entity/HomeRoom.entity';
 import { SelfStudyTime } from './entity/SelfStudyTime.entity';
 import { InChargeInfo } from './entity/InChargeInfo.entity';
 import SearchUserDto from './dto/searchUser.dto';
+import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
 
 @Injectable()
 export class UserService {
@@ -44,14 +45,16 @@ export class UserService {
 
   async changeUserLevel(userCode: number, level: Level): Promise<void> {
     const user: User = await this.getUserBycode<User>(userCode);
-    await this.userRepository.update(
-      {
-        userCode: user.userCode,
-      },
-      {
-        level,
-      },
-    );
+    if (user) {
+      await this.userRepository.update(
+        {
+          userCode: user.userCode,
+        },
+        {
+          level,
+        },
+      );
+    }
   }
 
   async addInchargeInfo(
@@ -121,12 +124,30 @@ export class UserService {
     );
   }
 
-  /////
+  async findSelfStudyTimeTeachers(
+    entryAvailable: EntryAvailable,
+    studentGradeList: number[],
+  ) {
+    //SELFSTUDY TIME 담당 선생님인 경우
+    return await Promise.all(
+      studentGradeList.map(async (grade) => {
+        const teacher = await this.findSelfStudyTimeTeacher(
+          grade,
+          entryAvailable.day,
+          entryAvailable.date,
+        );
+        if (teacher) {
+          return teacher;
+        }
+      }),
+    );
+  }
+
   async findSelfStudyTimeTeacher(
     inChargeGrade: number,
     day: number,
     date: Date,
-  ) {
+  ): Promise<TeacherInfo | null> {
     const { teacher } = await this.selfStudyTimeRepository.findOne({
       where: {
         day: date ? null : day,
