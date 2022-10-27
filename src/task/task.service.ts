@@ -8,6 +8,7 @@ export class TaskService {
 
   constructor(private schedulerRegistry: SchedulerRegistry) {
     this.addNewTimeout('1', 10000, () => {
+      this.logger.log('실행됨');
       console.log('ddddd');
     });
   }
