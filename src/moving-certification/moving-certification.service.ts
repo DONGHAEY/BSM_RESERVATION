@@ -22,6 +22,7 @@ import { ResponseMember } from './entity/ResponseMember.entity';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { TaskService } from 'src/task/task.service';
 import { ResponseReservationDto } from 'src/moving-certification/dto/responseReservation.dto';
+import { ResponseType } from './types/response.type';
 @Injectable()
 export class MovingCertificationService {
   constructor(
@@ -46,21 +47,41 @@ export class MovingCertificationService {
       ['entryAvailableInfo', 'responseMembers'],
     );
     const { entryAvailableInfo, responseMembers } = requestInfo;
-    // 먼저 요청을 응답하려는 선생님이 요청정보에 포함되어있는지 확인한다. //
+
     const isTeacher = responseMembers.find(
       (responseMember) => responseMember.userCode === teacherInfo.userCode,
     );
+    // 요청 정보에 현재 응답하는 선생님 정보가 포함되어있는지 확인한다.
     if (!isTeacher) {
       throw new HttpException(
         '요청에 응답할 수 있는 권한이 없습니다',
         HttpStatus.FORBIDDEN,
       );
     }
-
     // 요청이 현재 활성화 되어있는지 확인한다. ex)요청이 이미 거부 되어있거나, 시간이 지나있는 경우 //
-    // 요청을 타입에 따라 응답한다 //
-    // 응답 개수가 요청된 선생님들의 수와 같다면 응답한다 //
-    // 응답 후 10분후에 확인하는 함수를 실행한다 //
+    if (requestInfo.isAcc === isAccType.DENIED) {
+      throw new HttpException(
+        '이미 거부된 요청입니다.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    // 현재 올바른 항목을 승인하는지 확인해야한다 //
+    await this.checkEntryTime(entryAvailableInfo);
+    // 요청을 타입에 따라 응답한다. //
+    await this.updateResponseType(
+      requestInfo.requestCode,
+      teacherInfo.userCode,
+      response.responseType,
+    );
+
+    //
+    if (response.responseType === ResponseType.APPROVE) {
+      // 응답 개수가 요청된 선생님들의 수와 같다면 해당 요청 항목이 허용되었음으로 업데이트 한다. //
+      // 다음으로 방을 사용중으로 업데이트한다.//
+      // 응답 후 10분후에 확인하는 함수를 실행한다 //
+    }
+    if (response.responseType === ResponseType.REJECT) {
+    }
     // 알림을 보낸다 //
   }
   //만들어야할 메서드 정리
@@ -168,7 +189,7 @@ export class MovingCertificationService {
     //오늘 요일과 일치하는지 확인한다. //
     if (entryAvailable.day !== todayDate.getDay()) {
       throw new HttpException(
-        '오늘 항목만 예약 할 수 있습니다',
+        '오늘 항목만 진행 할 수 있습니다.',
         HttpStatus.BAD_GATEWAY,
       );
     }
@@ -261,6 +282,22 @@ export class MovingCertificationService {
       },
       relations: relationOptions,
     });
+  }
+
+  private async updateResponseType(
+    requestCode: number,
+    userCode: number,
+    responseType: ResponseType,
+  ) {
+    return await this.responseMemberRepository.update(
+      {
+        requestCode,
+        userCode,
+      },
+      {
+        responseType,
+      },
+    );
   }
 
   private async updateRequestAccByCode(

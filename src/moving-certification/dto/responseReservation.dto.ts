@@ -5,7 +5,7 @@ export class ResponseReservationDto {
   @IsNotEmpty()
   requestCode: number;
   @IsNotEmpty()
-  response: ResponseType;
+  responseType: ResponseType;
   @IsOptional()
   reason: string;
 }
