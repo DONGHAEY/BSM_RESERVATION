@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { RoomService } from 'src/room/room.service';
 import { RequestReservationDto } from './dto/requestReservation.dto';
 import { UserService } from 'src/user/user.service';
@@ -192,14 +192,12 @@ export class MovingCertificationService {
     entryAvailableCode: number,
   ): Promise<void> {
     //요청 했었던 모든 정보중 최신 정보를 불러온다.
-    const lastRequest = await this.getLastRequestByentryAvailablecode(
-      entryAvailableCode,
-    );
+    const lastRequest = await this.getRecentTodayRequest(entryAvailableCode);
     if (!lastRequest) return;
-    const { requestWhen, isAcc } = lastRequest;
-    const todayDate = new Date();
-    if (requestWhen.toLocaleDateString() !== todayDate.toLocaleDateString())
-      return;
+    const { isAcc } = lastRequest;
+    // const todayDate = new Date();
+    // if (requestWhen.toLocaleDateString() !== todayDate.toLocaleDateString())
+    //   return;
     if (isAcc === isAccType.ALLOWED) {
       throw new HttpException(
         '이미 예약이 된 항목이라 진행 할 수 없습니다',
@@ -232,14 +230,19 @@ export class MovingCertificationService {
     }
   }
 
-  /** 가장 최근의 요청정보를 불러오는 메서드이다. **/
-  private async getLastRequestByentryAvailablecode(
+  /** 오늘 가장 최근의 요청정보를 불러오는 메서드이다. **/
+  private async getRecentTodayRequest(
     entryAvailableCode: number,
     relationOptions: string[] = [],
   ) {
     return await this.requestInfoRepository.findOne({
       where: {
         entryAvailableCode,
+        requestWhen: MoreThan(
+          new Date(
+            `${new Date().toISOString().substring(0, 10)}T00:00:00.000Z`,
+          ),
+        ),
       },
       order: {
         requestWhen: 'DESC',
