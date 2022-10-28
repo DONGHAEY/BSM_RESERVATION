@@ -75,8 +75,8 @@ export class MovingCertificationService {
       teacherInfo.userCode,
       response.responseType,
     );
-    responseMembers.push(<ResponseMember>myResponse);
 
+    responseMembers.push(<ResponseMember>myResponse);
     if (response.responseType === ResponseType.APPROVE) {
       //만약 모든 선생님이 승인을 했다면.. //
       if (
@@ -95,9 +95,8 @@ export class MovingCertificationService {
           entryAvailableInfo.roomCode,
           true,
         );
-        // 그 다음으로 방을 사용중으로 업데이트한다.//
         // 응답 후 10분후에 문이 열렸는지 확인하는 함수를 실행한다 //
-        // 10분후에 문이 열렸는지 확인하는 함수를 실행할 때, 문이 열렸다면 그대로 승인을 하고, 문이 닫히는 시간에 룸 사용중을 미사용으로 업데이트 시키고, 접근권한도 막는다. //
+        // 10분후에 문이 열렸는지 확인하는 함수를 실행할 때, 문이 열렸다면 그대로 승인을 하고, 문이 닫히는 시간에 룸 사용중을 미사용으로 업데이트 시키는 함수를 실행. //
         // 문이 열리지 않았다면 거부처리로 업데이트한다 //
       }
     }
@@ -116,7 +115,7 @@ export class MovingCertificationService {
     // 입장 가능한 시간인지 확인한다. //
     await this.checkEntryTime(entryAvailable);
     // 요청하는 사항의 항목이 사용중인지 확인한다. //
-    await this.checkLastRequestInfo(entryAvailable.entryAvailableCode);
+    await this.checkAllowdRequestInfo(entryAvailable.entryAvailableCode);
     // 받은 유저 코드 리스트를 통해 유저정보를 리스트로 불러온다. //
     const studentList: StudentInfo[] =
       await this.userService.getUserListBycode<StudentInfo>(
@@ -227,20 +226,29 @@ export class MovingCertificationService {
 
   // * 요청이 현재 활성화 되어있는 상태인지 확인한다. * //
   //** 학생들이 요청을 하기위해 사용되는 메서드 이다, 예약하려는 항목에 대하여 요청전의 가장 최근 요청을 확인하여 예약을 할 수 있는지 체크하는 메서드이다. **//
-  private async checkLastRequestInfo(
+  private async checkAllowdRequestInfo(
     entryAvailableCode: number,
   ): Promise<void> {
     //요청 했었던 모든 정보중 최신 정보를 불러온다.
-    const lastRequest = await this.getRecentTodayRequest(entryAvailableCode);
-    if (!lastRequest) return;
-    const { isAcc } = lastRequest;
-    if (isAcc === isAccType.ALLOWED) {
-      throw new HttpException(
-        '이미 예약이 된 항목이라 진행 할 수 없습니다',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-    return;
+    const isAllowedRequest = await this.requestInfoRepository.findOne({
+      where: {
+        entryAvailableCode,
+        requestWhen: MoreThan(
+          new Date(
+            `${new Date().toISOString().substring(0, 10)}T00:00:00.000Z`,
+          ),
+        ),
+        isAcc: isAccType.ALLOWED,
+      },
+      order: {
+        requestWhen: 'DESC',
+      },
+    });
+    if (!isAllowedRequest) return;
+    throw new HttpException(
+      '이미 예약이 된 항목이라 진행 할 수 없습니다',
+      HttpStatus.FORBIDDEN,
+    );
   }
 
   private async checkCapacity(
@@ -264,27 +272,6 @@ export class MovingCertificationService {
         HttpStatus.BAD_REQUEST,
       );
     }
-  }
-
-  /** 오늘 가장 최근의 요청정보를 불러오는 메서드이다. **/
-  private async getRecentTodayRequest(
-    entryAvailableCode: number,
-    relationOptions: string[] = [],
-  ) {
-    return await this.requestInfoRepository.findOne({
-      where: {
-        entryAvailableCode,
-        requestWhen: MoreThan(
-          new Date(
-            `${new Date().toISOString().substring(0, 10)}T00:00:00.000Z`,
-          ),
-        ),
-      },
-      order: {
-        requestWhen: 'DESC',
-      },
-      relations: relationOptions,
-    });
   }
 
   private async getRequestByCode(
