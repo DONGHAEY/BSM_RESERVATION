@@ -41,19 +41,25 @@ export class MovingCertificationService {
     teacherInfo: TeacherInfo,
     response: ResponseReservationDto,
   ) {
+    const requestInfo: RequestInfo = await this.getRequestByCode(
+      response.requestCode,
+      ['entryAvailableInfo', 'responseMembers'],
+    );
+    const { entryAvailableInfo, responseMembers } = requestInfo;
     // 먼저 요청을 응답하려는 선생님이 요청정보에 포함되어있는지 확인한다. //
-    const { entryAvailableInfo, responseMembers }: RequestInfo =
-      await this.getRequestByCode(response.requestCode, [
-        'entryAvailableInfo',
-        'responseMembers',
-      ]);
-
     const isTeacher = responseMembers.find(
       (responseMember) => responseMember.userCode === teacherInfo.userCode,
     );
-
+    if (!isTeacher) {
+      throw new HttpException(
+        '요청에 응답할 수 있는 권한이 없습니다',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    // 요청을 응답할 수 있는 시간인지 확인한다.
+    await this.checkEntryTime(entryAvailableInfo);
     // 요청이 현재 활성화 되어있는지 확인한다. ex)요청이 이미 거부 되어있거나, 시간이 지나있는 경우 //
-    // await this.checkExsistRequestInfo()
+    await this.checkRequestInfo(requestInfo);
     // 요청을 타입에 따라 응답한다 //
     // 응답 개수가 요청된 선생님들의 수와 같다면 응답한다 //
     // 응답 후 10분후에 확인하는 함수를 실행한다 //
@@ -72,7 +78,7 @@ export class MovingCertificationService {
     // 입장 가능한 시간인지 확인한다. //
     await this.checkEntryTime(entryAvailable);
     // 요청하는 사항의 항목이 사용중인지, 예약이 되어있는지 확인한다. //
-    await this.checkExsistRequestInfo(entryAvailable.entryAvailableCode);
+    await this.checkLastRequestInfo(entryAvailable.entryAvailableCode);
     // 받은 유저 코드 리스트를 통해 유저정보를 리스트로 불러온다. //
     const studentList: StudentInfo[] =
       await this.userService.getUserListBycode<StudentInfo>(
@@ -181,27 +187,20 @@ export class MovingCertificationService {
     }
   }
 
-  //** 최근 지금 요청전의 가장 최근 요청을 확인하여 예약을 할 수 있는지 체크하는 메서드이다. **//
-  private async checkExsistRequestInfo(
-    entryAvailableCode: number,
-  ): Promise<void> {
+  // * 요청이 현재 활성화 되어있는 상태인지 확인한다. * //
+  private async checkRequestInfo(requestInfo: RequestInfo) {
     const todayDate = new Date();
-    const lastRequestInfo = await this.getLastRequestByentryAvailablecode(
-      entryAvailableCode,
-    ); //요청 했었던 모든 정보중 최신 정보를 불러온다.
-
-    // 만약 그항목에 대한 다른 요청이 있었다면, 승인이 되었는지의 여부를 확인한다.
-    if (lastRequestInfo && lastRequestInfo.isAcc === isAccType.ALLOWED) {
+    if (requestInfo.isAcc === isAccType.ALLOWED) {
       throw new HttpException(
         '이미 승인 완료된 항목입니다.',
         HttpStatus.BAD_GATEWAY,
       );
     }
     // 만약 그 항목에 대한 대기중인 다른 최근 요청이 있었다면, 그 최근요청이 10분이 지났는지 확인한다.
-    if (lastRequestInfo && lastRequestInfo.isAcc === isAccType.WATING) {
+    if (requestInfo.isAcc === isAccType.WATING) {
       if (
         !(
-          todayDate.getTime() - lastRequestInfo.requestWhen.getTime() >
+          todayDate.getTime() - requestInfo.requestWhen.getTime() >
           1000 * 60 * 10
         )
       ) {
@@ -211,6 +210,20 @@ export class MovingCertificationService {
           HttpStatus.BAD_GATEWAY,
         );
       }
+    }
+  }
+
+  //** 최근 지금 요청전의 가장 최근 요청을 확인하여 예약을 할 수 있는지 체크하는 메서드이다. **//
+  private async checkLastRequestInfo(
+    entryAvailableCode: number,
+  ): Promise<void> {
+    //요청 했었던 모든 정보중 최신 정보를 불러온다.
+    const lastRequestInfo = await this.getLastRequestByentryAvailablecode(
+      entryAvailableCode,
+    );
+    // 만약 그항목에 대한 다른 요청이 있었다면, 승인이 되었는지의 여부를 확인한다.
+    if (lastRequestInfo) {
+      await this.checkRequestInfo(lastRequestInfo);
     }
   }
 

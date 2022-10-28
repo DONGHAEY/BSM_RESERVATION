@@ -5,7 +5,6 @@ import { CronJob } from 'cron';
 @Injectable()
 export class TaskService {
   private readonly logger = new Logger(TaskService.name);
-
   constructor(private schedulerRegistry: SchedulerRegistry) {}
   addNewTimeout(timeoutName: string, milliseconds: number, callBack: any) {
     const timeout = setTimeout(callBack, milliseconds);
