@@ -6,15 +6,10 @@ import { CronJob } from 'cron';
 export class TaskService {
   private readonly logger = new Logger(TaskService.name);
 
-  constructor(private schedulerRegistry: SchedulerRegistry) {
-    this.addNewTimeout('1', 10000, () => {
-      this.logger.log('실행됨');
-      console.log('ddddd');
-    });
-  }
-
-  addNewTimeout(timeoutName: string, milliseconds: number, callBack) {
+  constructor(private schedulerRegistry: SchedulerRegistry) {}
+  addNewTimeout(timeoutName: string, milliseconds: number, callBack: any) {
     const timeout = setTimeout(callBack, milliseconds);
     this.schedulerRegistry.addTimeout(timeoutName, timeout);
+    this.logger.log(`${timeoutName} is excuted`);
   }
 }

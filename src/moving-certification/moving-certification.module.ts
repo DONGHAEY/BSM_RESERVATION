@@ -11,6 +11,7 @@ import { RequestMember } from './entity/RequestMember.entity';
 import { ResponseMember } from './entity/ResponseMember.entity';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
+import { TaskModule } from 'src/task/task.module';
 // import { ResponseMember } from './entdity/ResponseMember.entity';
 
 @Module({
@@ -18,6 +19,7 @@ import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
     TypeOrmModule.forFeature([RequestInfo, RequestMember, ResponseMember]),
     RoomModule,
     UserModule,
+    TaskModule,
   ],
   providers: [MovingCertificationService],
   controllers: [MovingCertificationController],

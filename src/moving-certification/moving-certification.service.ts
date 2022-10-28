@@ -20,10 +20,11 @@ import { RequestInfo } from './entity/RequestInfo.entity';
 import { RequestMember } from './entity/RequestMember.entity';
 import { ResponseMember } from './entity/ResponseMember.entity';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { TaskService } from 'src/task/task.service';
 @Injectable()
 export class MovingCertificationService {
   constructor(
-    private schedulerRegistry: SchedulerRegistry,
+    private taskServie: TaskService,
     private roomService: RoomService,
     private userService: UserService,
     @InjectRepository(RequestInfo)
@@ -112,7 +113,18 @@ export class MovingCertificationService {
     );
     //알림을 보낸다
     // 10분뒤에 스케줄려로 + 승인이 되었는지 확인하고 승인이 되지 않았다면, 거부됨으로 업데이트시킨다
-    // 문이 열렸는지 안열렸는지 확인한다 열렸다면 승인 그대로두고 열리지 않았다면 거부됨으로 업데이트 시킨다..
+    this.taskServie.addNewTimeout(
+      `${requestCode}-check-request-acc`,
+      1000 * 60 * 10,
+      async () => {
+        const { isAcc } = await this.getRequestByCode(requestCode);
+        if (isAcc === isAccType.WATING) {
+          await this.updateRequestByCode(requestCode, isAccType.DENIED);
+        }
+      },
+      //시간이 지나도 승인이 되지 않아 거부가 되었다고 알림을 발송한다..
+    );
+    // 승인후, 문이 열렸는지 안열렸는지 확인한다 열렸다면 승인 그대로두고 열리지 않았다면 거부됨으로 업데이트 시킨다..
   }
 
   private async findRequestTeachers(
@@ -176,6 +188,25 @@ export class MovingCertificationService {
       }
     }
     //********* + 또 항목 시간이 지금시간과 비교해서 이미 지나간 항목은 아닌지도 확인해야한다. ***********//
+  }
+
+  private async getRequestByCode(requestCode: number) {
+    return await this.requestInfoRepository.findOne({
+      where: {
+        requestCode,
+      },
+    });
+  }
+
+  private async updateRequestByCode(requestCode: number, isAccType: isAccType) {
+    return await this.requestInfoRepository.update(
+      {
+        requestCode,
+      },
+      {
+        isAcc: isAccType,
+      },
+    );
   }
 
   private async getLastRequestByentryAvailablecode(entryAvailableCode: number) {
