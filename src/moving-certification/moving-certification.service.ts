@@ -19,7 +19,6 @@ import { isAccType } from './types/isAcc.type';
 import { RequestInfo } from './entity/RequestInfo.entity';
 import { RequestMember } from './entity/RequestMember.entity';
 import { ResponseMember } from './entity/ResponseMember.entity';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import { TaskService } from 'src/task/task.service';
 import { ResponseReservationDto } from 'src/moving-certification/dto/responseReservation.dto';
 import { ResponseType } from './types/response.type';
@@ -46,7 +45,7 @@ export class MovingCertificationService {
       response.requestCode,
       ['entryAvailableInfo', 'responseMembers'],
     );
-    const { entryAvailableInfo, responseMembers } = requestInfo;
+    let { entryAvailableInfo, responseMembers } = requestInfo;
 
     const isTeacher = responseMembers.find(
       (responseMember) => responseMember.userCode === teacherInfo.userCode,
@@ -59,28 +58,48 @@ export class MovingCertificationService {
       );
     }
     // 요청이 현재 활성화 되어있는지 확인한다. ex)요청이 이미 거부 되어있거나, 시간이 지나있는 경우 //
-    if (requestInfo.isAcc === isAccType.DENIED) {
+    if (requestInfo.isAcc === isAccType.DENIED || isAccType.ALLOWED) {
       throw new HttpException(
-        '이미 거부된 요청입니다.',
+        '이미 처리된 요청입니다.',
         HttpStatus.BAD_REQUEST,
       );
     }
-    // 현재 올바른 항목을 승인하는지 확인해야한다 //
+    // 현재 올바른 시간의 항목을 승인하는지 확인한다. //
     await this.checkEntryTime(entryAvailableInfo);
     // 요청을 타입에 따라 응답한다. //
-    await this.updateResponseType(
+    responseMembers = responseMembers.filter(
+      (responseMember) => responseMember.userCode !== teacherInfo.userCode,
+    );
+    const myResponse: ResponseMember = await this.updateResponseType(
       requestInfo.requestCode,
       teacherInfo.userCode,
       response.responseType,
     );
+    responseMembers.push(<ResponseMember>myResponse);
 
-    //
     if (response.responseType === ResponseType.APPROVE) {
-      // 응답 개수가 요청된 선생님들의 수와 같다면 해당 요청 항목이 허용되었음으로 업데이트 한다. //
-      // 다음으로 방을 사용중으로 업데이트한다.//
-      // 응답 후 10분후에 확인하는 함수를 실행한다 //
-    }
-    if (response.responseType === ResponseType.REJECT) {
+      //만약 모든 선생님이 승인을 했다면.. //
+      if (
+        responseMembers.every(
+          (responseMember) =>
+            responseMember.responseType === ResponseType.APPROVE,
+        )
+      ) {
+        // 요청 항목을 허용되었음으로 업데이트한다. //
+        await this.updateRequestAccByCode(
+          requestInfo.requestCode,
+          isAccType.ALLOWED,
+        );
+        // 현재 방을 사용중으로 업데이트한다. //
+        await this.roomService.setRoomUsingStatus(
+          entryAvailableInfo.roomCode,
+          true,
+        );
+        // 그 다음으로 방을 사용중으로 업데이트한다.//
+        // 응답 후 10분후에 문이 열렸는지 확인하는 함수를 실행한다 //
+        // 10분후에 문이 열렸는지 확인하는 함수를 실행할 때, 문이 열렸다면 그대로 승인을 하고, 문이 닫히는 시간에 룸 사용중을 미사용으로 업데이트 시키고, 접근권한도 막는다. //
+        // 문이 열리지 않았다면 거부처리로 업데이트한다 //
+      }
     }
     // 알림을 보낸다 //
   }
@@ -207,8 +226,7 @@ export class MovingCertificationService {
   }
 
   // * 요청이 현재 활성화 되어있는 상태인지 확인한다. * //
-
-  //** 학생들이 요청을 하기위해 사용되는 메서드 이다, 지금 요청전의 가장 최근 요청을 확인하여 예약을 할 수 있는지 체크하는 메서드이다. **//
+  //** 학생들이 요청을 하기위해 사용되는 메서드 이다, 예약하려는 항목에 대하여 요청전의 가장 최근 요청을 확인하여 예약을 할 수 있는지 체크하는 메서드이다. **//
   private async checkLastRequestInfo(
     entryAvailableCode: number,
   ): Promise<void> {
@@ -216,9 +234,6 @@ export class MovingCertificationService {
     const lastRequest = await this.getRecentTodayRequest(entryAvailableCode);
     if (!lastRequest) return;
     const { isAcc } = lastRequest;
-    // const todayDate = new Date();
-    // if (requestWhen.toLocaleDateString() !== todayDate.toLocaleDateString())
-    //   return;
     if (isAcc === isAccType.ALLOWED) {
       throw new HttpException(
         '이미 예약이 된 항목이라 진행 할 수 없습니다',
@@ -288,7 +303,7 @@ export class MovingCertificationService {
     requestCode: number,
     userCode: number,
     responseType: ResponseType,
-  ) {
+  ): Promise<any> {
     return await this.responseMemberRepository.update(
       {
         requestCode,
