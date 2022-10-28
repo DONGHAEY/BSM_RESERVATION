@@ -31,6 +31,11 @@ export class Room extends BaseEntity {
   })
   roomType: RoomType;
 
+  @Column({
+    name: 'is_using',
+  })
+  isUsing: boolean;
+
   @OneToMany(
     (type) => EntryAvailable,
     (entryAvailable) => entryAvailable.room,

@@ -62,11 +62,35 @@ export class RoomService {
     });
   }
 
-  async getEntryAvailableInfoBycode(entryAvailableCode: number) {
+  async getEntryAvailableInfoBycode(
+    entryAvailableCode: number,
+    relationOptions: string[] = [],
+  ) {
     return await this.entryAvailableRepository.findOne({
       where: {
         entryAvailableCode,
       },
+      relations: relationOptions,
     });
+  }
+
+  async checkUsingRoom(roomCode: number) {
+    const { isUsing } = await this.roomRepository.findOne({
+      where: {
+        roomCode,
+      },
+    });
+    return isUsing;
+  }
+
+  async setRoomUsingStatus(roomCode: number, isUsing: boolean) {
+    return await this.roomRepository.update(
+      {
+        roomCode,
+      },
+      {
+        isUsing,
+      },
+    );
   }
 }

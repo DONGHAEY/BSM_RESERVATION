@@ -56,10 +56,8 @@ export class MovingCertificationService {
         HttpStatus.FORBIDDEN,
       );
     }
-    // 요청을 응답할 수 있는 시간인지 확인한다.
-    await this.checkEntryTime(entryAvailableInfo);
+
     // 요청이 현재 활성화 되어있는지 확인한다. ex)요청이 이미 거부 되어있거나, 시간이 지나있는 경우 //
-    await this.checkRequestInfo(requestInfo);
     // 요청을 타입에 따라 응답한다 //
     // 응답 개수가 요청된 선생님들의 수와 같다면 응답한다 //
     // 응답 후 10분후에 확인하는 함수를 실행한다 //
@@ -77,7 +75,7 @@ export class MovingCertificationService {
     }
     // 입장 가능한 시간인지 확인한다. //
     await this.checkEntryTime(entryAvailable);
-    // 요청하는 사항의 항목이 사용중인지, 예약이 되어있는지 확인한다. //
+    // 요청하는 사항의 항목이 사용중인지 확인한다. //
     await this.checkLastRequestInfo(entryAvailable.entryAvailableCode);
     // 받은 유저 코드 리스트를 통해 유저정보를 리스트로 불러온다. //
     const studentList: StudentInfo[] =
@@ -126,7 +124,7 @@ export class MovingCertificationService {
       async () => {
         const { isAcc } = await this.getRequestByCode(requestCode);
         if (isAcc === isAccType.WATING) {
-          await this.updateRequestByCode(requestCode, isAccType.DENIED);
+          await this.updateRequestAccByCode(requestCode, isAccType.DENIED);
         }
       },
       // 시간이 지나도 승인이 되지 않아 거부가 되었다고 알림을 발송한다.. //
@@ -181,56 +179,40 @@ export class MovingCertificationService {
     let nowMin: number = todayDate.getMinutes();
     if (hour < nowHour && min - 10 < nowMin) {
       throw new HttpException(
-        '이미 시간이 지나가서 예약 할 수 없습니다',
+        '이미 시간이 지나가서 진행 할 수 없습니다',
         HttpStatus.BAD_GATEWAY,
       );
     }
   }
 
   // * 요청이 현재 활성화 되어있는 상태인지 확인한다. * //
-  private async checkRequestInfo(requestInfo: RequestInfo) {
-    const todayDate = new Date();
-    if (requestInfo.isAcc === isAccType.ALLOWED) {
-      throw new HttpException(
-        '이미 승인 완료된 항목입니다.',
-        HttpStatus.BAD_GATEWAY,
-      );
-    }
-    // 만약 그 항목에 대한 대기중인 다른 최근 요청이 있었다면, 그 최근요청이 10분이 지났는지 확인한다.
-    if (requestInfo.isAcc === isAccType.WATING) {
-      if (
-        !(
-          todayDate.getTime() - requestInfo.requestWhen.getTime() >
-          1000 * 60 * 10
-        )
-      ) {
-        //최근에 있었던 요청이 대기상태로 10분이 지나지 않은 경우 처리된다.
-        throw new HttpException(
-          '이미 예약이 누군가에 의해 대기중인 항목입니다.',
-          HttpStatus.BAD_GATEWAY,
-        );
-      }
-    }
-  }
 
-  //** 최근 지금 요청전의 가장 최근 요청을 확인하여 예약을 할 수 있는지 체크하는 메서드이다. **//
+  //** 학생들이 요청을 하기위해 사용되는 메서드 이다, 지금 요청전의 가장 최근 요청을 확인하여 예약을 할 수 있는지 체크하는 메서드이다. **//
   private async checkLastRequestInfo(
     entryAvailableCode: number,
   ): Promise<void> {
     //요청 했었던 모든 정보중 최신 정보를 불러온다.
-    const lastRequestInfo = await this.getLastRequestByentryAvailablecode(
+    const lastRequest = await this.getLastRequestByentryAvailablecode(
       entryAvailableCode,
     );
-    // 만약 그항목에 대한 다른 요청이 있었다면, 승인이 되었는지의 여부를 확인한다.
-    if (lastRequestInfo) {
-      await this.checkRequestInfo(lastRequestInfo);
+    if (!lastRequest) return;
+    const { requestWhen, isAcc } = lastRequest;
+    const todayDate = new Date();
+    if (requestWhen.toLocaleDateString() !== todayDate.toLocaleDateString())
+      return;
+    if (isAcc === isAccType.ALLOWED) {
+      throw new HttpException(
+        '이미 예약이 된 항목이라 진행 할 수 없습니다',
+        HttpStatus.FORBIDDEN,
+      );
     }
+    return;
   }
 
   private async checkCapacity(
     studentList: StudentInfo[],
     entryAvailable: EntryAvailable,
-  ) {
+  ): Promise<void> {
     const numOfMember = studentList.length;
     if (entryAvailable.minOcc > numOfMember) {
       throw new HttpException(
@@ -251,7 +233,10 @@ export class MovingCertificationService {
   }
 
   /** 가장 최근의 요청정보를 불러오는 메서드이다. **/
-  private async getLastRequestByentryAvailablecode(entryAvailableCode: number) {
+  private async getLastRequestByentryAvailablecode(
+    entryAvailableCode: number,
+    relationOptions: string[] = [],
+  ) {
     return await this.requestInfoRepository.findOne({
       where: {
         entryAvailableCode,
@@ -259,6 +244,7 @@ export class MovingCertificationService {
       order: {
         requestWhen: 'DESC',
       },
+      relations: relationOptions,
     });
   }
 
@@ -274,7 +260,10 @@ export class MovingCertificationService {
     });
   }
 
-  private async updateRequestByCode(requestCode: number, isAccType: isAccType) {
+  private async updateRequestAccByCode(
+    requestCode: number,
+    isAccType: isAccType,
+  ) {
     return await this.requestInfoRepository.update(
       {
         requestCode,
