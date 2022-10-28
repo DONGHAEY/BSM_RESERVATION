@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RoomService } from 'src/room/room.service';
-import { RequestReservationDto } from 'src/room/dto/requestReservation.dto';
+import { RequestReservationDto } from './dto/requestReservation.dto';
 import { UserService } from 'src/user/user.service';
 import BsmOauth, { BsmOauthUserRole } from 'bsm-oauth';
 import { User } from 'src/user/entity/User.entity';
@@ -21,6 +21,7 @@ import { RequestMember } from './entity/RequestMember.entity';
 import { ResponseMember } from './entity/ResponseMember.entity';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { TaskService } from 'src/task/task.service';
+import { ResponseReservationDto } from 'src/moving-certification/dto/responseReservation.dto';
 @Injectable()
 export class MovingCertificationService {
   constructor(
@@ -35,24 +36,43 @@ export class MovingCertificationService {
     private responseMemberRepository: Repository<ResponseMember>,
   ) {}
 
+  //요청 응답하기 기능 //
+  async responseRoom(
+    teacherInfo: TeacherInfo,
+    response: ResponseReservationDto,
+  ) {
+    // 먼저 요청을 응답하려는 선생님이 요청정보에 포함되어있는지 확인한다. //
+    const { entryAvailableInfo, responseMembers }: RequestInfo =
+      await this.getRequestByCode(response.requestCode, [
+        'entryAvailableInfo',
+        'responseMembers',
+      ]);
+
+    const isTeacher = responseMembers.find(
+      (responseMember) => responseMember.userCode === teacherInfo.userCode,
+    );
+
+    // 요청이 현재 활성화 되어있는지 확인한다. ex)요청이 이미 거부 되어있거나, 시간이 지나있는 경우 //
+    // await this.checkExsistRequestInfo()
+    // 요청을 타입에 따라 응답한다 //
+    // 응답 개수가 요청된 선생님들의 수와 같다면 응답한다 //
+    // 응답 후 10분후에 확인하는 함수를 실행한다 //
+    // 알림을 보낸다 //
+  }
   //만들어야할 메서드 정리
-  // 1. 요청하기 기능 //
+  // 방 요청하기 기능  //
   async requestRoom(request: RequestReservationDto) {
     const entryAvailable = await this.roomService.getEntryAvailableInfoBycode(
       request.entryAvailableCode,
     );
-
     // 학생이 요청한 항목이 존재하는지 확인한다.
     if (!entryAvailable) {
       throw new HttpException('그런 항목은 없습니다', HttpStatus.NOT_FOUND);
     }
-
     // 입장 가능한 시간인지 확인한다. //
     await this.checkEntryTime(entryAvailable);
-
     // 요청하는 사항의 항목이 사용중인지, 예약이 되어있는지 확인한다. //
     await this.checkExsistRequestInfo(entryAvailable.entryAvailableCode);
-
     // 받은 유저 코드 리스트를 통해 유저정보를 리스트로 불러온다. //
     const studentList: StudentInfo[] =
       await this.userService.getUserListBycode<StudentInfo>(
@@ -63,19 +83,19 @@ export class MovingCertificationService {
       studentList,
       BsmOauthUserRole.STUDENT,
     );
-    // 학생수가 입장가능 정보의 최소인원, 최대인원을 만족하는지 확인해야한다.
+    // 학생수가 입장가능 정보의 최소인원, 최대인원을 만족하는지 확인해야한다. //
     await this.checkCapacity(studentList, entryAvailable);
-    // 학생이 현재 사용하고자 하는 항목의 요청 타입에 따라 요청 할 선생님들을 불러온다.
+    // 학생이 현재 사용하고자 하는 항목의 요청 타입에 따라 요청 할 선생님들을 불러온다. //
     const teacherList: TeacherInfo[] = await this.findRequestTeachers(
       entryAvailable,
       studentList,
     );
-    //요청사항을 저장
+    //요청사항을 저장 //
     const { requestCode } = await this.requestInfoRepository.save({
       entryAvailableCode: request.entryAvailableCode,
     });
 
-    // 요청하는 학생들을 저장 한다.
+    // 요청하는 학생들을 저장 한다. //
     await Promise.all(
       request.userCodeList.map(async (userCode) => {
         await this.requestMemberRepository.save({
@@ -84,7 +104,7 @@ export class MovingCertificationService {
         });
       }),
     );
-    // 요청받는 선생님을 저장 한다.
+    // 요청받는 선생님을 저장 한다. //
     await Promise.all(
       teacherList.map(async (teacher) => {
         await this.responseMemberRepository.save({
@@ -93,7 +113,7 @@ export class MovingCertificationService {
         });
       }),
     );
-    // 10분뒤에 스케줄려로 + 승인이 되었는지 확인하고 승인이 되지 않았다면, 거부됨으로 업데이트시킨다.
+    // 10분뒤에 스케줄려로 + 승인이 되었는지 확인하고 승인이 되지 않았다면, 거부됨으로 업데이트시킨다. //
     this.taskServie.addNewTimeout(
       `${requestCode}-check-request-acc`,
       1000 * 60 * 10,
@@ -103,7 +123,7 @@ export class MovingCertificationService {
           await this.updateRequestByCode(requestCode, isAccType.DENIED);
         }
       },
-      //시간이 지나도 승인이 되지 않아 거부가 되었다고 알림을 발송한다..
+      // 시간이 지나도 승인이 되지 않아 거부가 되었다고 알림을 발송한다.. //
     );
   }
 
@@ -149,11 +169,11 @@ export class MovingCertificationService {
       );
     }
     // 항목 시간이 지금시간과 비교해서 이미 지나간 항목은 아닌지도 확인한다. //
-    let hour: number = parseInt(entryAvailable.openAt.substring(0, 2));
-    let min: number = parseInt(entryAvailable.openAt.substring(2, 4));
+    let hour: number = parseInt(entryAvailable.closeAt.substring(0, 2));
+    let min: number = parseInt(entryAvailable.closeAt.substring(2, 4));
     let nowHour: number = todayDate.getHours();
     let nowMin: number = todayDate.getMinutes();
-    if (hour < nowHour && min < nowMin) {
+    if (hour < nowHour && min - 10 < nowMin) {
       throw new HttpException(
         '이미 시간이 지나가서 예약 할 수 없습니다',
         HttpStatus.BAD_GATEWAY,
@@ -229,11 +249,15 @@ export class MovingCertificationService {
     });
   }
 
-  private async getRequestByCode(requestCode: number) {
+  private async getRequestByCode(
+    requestCode: number,
+    relationOptions: string[] = [],
+  ) {
     return await this.requestInfoRepository.findOne({
       where: {
         requestCode,
       },
+      relations: relationOptions,
     });
   }
 

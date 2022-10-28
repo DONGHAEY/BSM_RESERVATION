@@ -1,5 +1,6 @@
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { ResponseType } from '../types/response.type';
 import { RequestInfo } from './RequestInfo.entity';
 
 @Entity()
@@ -14,6 +15,14 @@ export class ResponseMember {
     type: 'int',
   })
   userCode: number;
+
+  @Column({
+    name: 'response_type',
+    type: 'enum',
+    enum: ResponseType,
+    default: ResponseType.NONE,
+  })
+  responseType: ResponseType;
 
   @ManyToOne(
     (type) => RequestInfo,

@@ -17,7 +17,6 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { User } from 'src/user/entity/User.entity';
 import { Level } from 'src/user/types/Level.type';
 import { AddEntryAvailableDto } from './dto/entryAvailable.dto';
-import { RequestReservationDto } from './dto/requestReservation.dto';
 import { RoomService } from './room.service';
 import { RoomType } from './type/Room.type';
 
