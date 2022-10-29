@@ -43,9 +43,9 @@ export class MovingCertificationService {
   ) {
     const requestInfo: RequestInfo = await this.getRequestByCode(
       response.requestCode,
-      ['entryAvailableInfo', 'responseMembers'],
+      ['entryAvailableInfo', 'responseMembers', 'requestMembers'],
     );
-    let { entryAvailableInfo, responseMembers } = requestInfo;
+    let { entryAvailableInfo, responseMembers, requestMembers } = requestInfo;
 
     const isTeacher = responseMembers.find(
       (responseMember) => responseMember.userCode === teacherInfo.userCode,
@@ -94,6 +94,7 @@ export class MovingCertificationService {
         await this.roomService.setRoomUsingStatus(
           entryAvailableInfo.roomCode,
           true,
+          requestMembers,
         );
         // 닫는시간에 룸 사용을 미사용으로 업데이트시키는 함수를 실행한다.
         this.taskServie.addNewSchedule(
@@ -116,6 +117,7 @@ export class MovingCertificationService {
             await this.roomService.setRoomUsingStatus(
               requestInfo.entryAvailableInfo.roomCode,
               false,
+              requestMembers,
             );
           },
         );

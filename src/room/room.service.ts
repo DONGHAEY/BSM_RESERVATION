@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
+import { RequestMember } from 'src/moving-certification/entity/RequestMember.entity';
 import { AddEntryAvailableDto } from './dto/entryAvailable.dto';
 import { Room } from './entity/Room.entity';
 import { EntryAvailableRepository } from './repository/EntryAvailable.repository';
@@ -74,16 +75,11 @@ export class RoomService {
     });
   }
 
-  async checkUsingRoom(roomCode: number) {
-    const { isUsing } = await this.roomRepository.findOne({
-      where: {
-        roomCode,
-      },
-    });
-    return isUsing;
-  }
-
-  async setRoomUsingStatus(roomCode: number, isUsing: boolean) {
+  async setRoomUsingStatus(
+    roomCode: number,
+    isUsing: boolean,
+    requestMembers: RequestMember[],
+  ) {
     return await this.roomRepository.update(
       {
         roomCode,
