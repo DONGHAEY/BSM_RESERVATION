@@ -98,7 +98,7 @@ export class MovingCertificationService {
         );
         // 닫는시간에 룸 사용을 미사용으로 업데이트시키는 함수를 실행한다.
         this.taskServie.addNewSchedule(
-          `${requestInfo.requestCode}-check-open`,
+          `${requestInfo.requestCode}-close-schedule`,
           new Date(
             `${new Date()
               .toISOString()
@@ -121,9 +121,6 @@ export class MovingCertificationService {
             );
           },
         );
-        // 응답 후 5분후에 문이 열렸는지 확인하는 함수를 실행한다 //
-        // 10분후에 문이 열렸는지 확인하는 함수를 실행할 때, 문이 열렸다면 그대로 승인을 하고, 문이 닫히는 시간에 룸 사용중을 미사용으로 업데이트 시키는 함수를 실행. //
-        // 문이 열리지 않았다면 거부처리로 업데이트한다 //
       }
     }
     // 알림을 보낸다 //
@@ -138,10 +135,13 @@ export class MovingCertificationService {
     if (!entryAvailable) {
       throw new HttpException('그런 항목은 없습니다', HttpStatus.NOT_FOUND);
     }
+    // 요청하는 사람이 이미 사용중인 방이 있는지도 확인해야한다. //
     // 입장 가능한 시간인지 확인한다. //
     await this.checkEntryTime(entryAvailable);
-    // 요청하는 사항의 항목이 사용중인지 확인한다. //
-    await this.checkAllowdRequestInfo(entryAvailable.entryAvailableCode);
+    // 요청하는 사항의 항목이 이미 사용중인지, 예약 대기자가 있는지 확인한다. //
+    await this.checkAllowdAndWatingRequestInfo(
+      entryAvailable.entryAvailableCode,
+    );
     // 받은 유저 코드 리스트를 통해 유저정보를 리스트로 불러온다. //
     const studentList: StudentInfo[] =
       await this.userService.getUserListBycode<StudentInfo>(
@@ -252,29 +252,31 @@ export class MovingCertificationService {
 
   // * 요청이 현재 활성화 되어있는 상태인지 확인한다. * //
   //** 학생들이 요청을 하기위해 사용되는 메서드 이다, 예약하려는 항목에 대하여 요청전의 가장 최근 요청을 확인하여 예약을 할 수 있는지 체크하는 메서드이다. **//
-  private async checkAllowdRequestInfo(
+  private async checkAllowdAndWatingRequestInfo(
     entryAvailableCode: number,
   ): Promise<void> {
     //요청 했었던 모든 정보중 최신 정보를 불러온다.
-    const isAllowedRequest = await this.requestInfoRepository.findOne({
-      where: {
-        entryAvailableCode,
-        requestWhen: MoreThan(
-          new Date(
-            `${new Date().toISOString().substring(0, 10)}T00:00:00.000Z`,
-          ),
-        ),
-        isAcc: isAccType.ALLOWED,
-      },
-      order: {
-        requestWhen: 'DESC',
-      },
-    });
-    if (!isAllowedRequest) return;
-    throw new HttpException(
-      '이미 예약이 된 항목이라 진행 할 수 없습니다',
-      HttpStatus.FORBIDDEN,
+    const isAllowedRequest = await this.getTodayRequest(
+      entryAvailableCode,
+      isAccType.ALLOWED,
     );
+    const isWatingRequest = await this.getTodayRequest(
+      entryAvailableCode,
+      isAccType.WATING,
+    );
+    if (isAllowedRequest) {
+      throw new HttpException(
+        '이미 예약이 된 항목이라 진행 할 수 없습니다',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    if (isWatingRequest) {
+      throw new HttpException(
+        '예약이 누군가에게 의해 대기중입니다 - 예약이 10분뒤에도 승인되지 않거나, 거부된다면 다시 요청 할 수 있습니다',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    return;
   }
 
   private async checkCapacity(
@@ -298,6 +300,22 @@ export class MovingCertificationService {
         HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+  private async getTodayRequest(entryAvailableCode: number, isAcc: isAccType) {
+    return await this.requestInfoRepository.findOne({
+      where: [
+        {
+          entryAvailableCode,
+          requestWhen: MoreThan(
+            new Date(
+              `${new Date().toISOString().substring(0, 10)}T00:00:00.000Z`,
+            ),
+          ),
+          isAcc,
+        },
+      ],
+    });
   }
 
   private async getRequestByCode(
