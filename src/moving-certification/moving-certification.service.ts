@@ -95,7 +95,31 @@ export class MovingCertificationService {
           entryAvailableInfo.roomCode,
           true,
         );
-        // 응답 후 10분후에 문이 열렸는지 확인하는 함수를 실행한다 //
+        // 닫는시간에 룸 사용을 미사용으로 업데이트시키는 함수를 실행한다.
+        this.taskServie.addNewSchedule(
+          `${requestInfo.requestCode}-check-open`,
+          new Date(
+            `${new Date()
+              .toISOString()
+              .substring(
+                0,
+                10,
+              )}T${requestInfo.entryAvailableInfo.closeAt.substring(
+              0,
+              2,
+            )}:${requestInfo.entryAvailableInfo.closeAt.substring(
+              2,
+              4,
+            )}:00.000Z`,
+          ),
+          async () => {
+            await this.roomService.setRoomUsingStatus(
+              requestInfo.entryAvailableInfo.roomCode,
+              false,
+            );
+          },
+        );
+        // 응답 후 5분후에 문이 열렸는지 확인하는 함수를 실행한다 //
         // 10분후에 문이 열렸는지 확인하는 함수를 실행할 때, 문이 열렸다면 그대로 승인을 하고, 문이 닫히는 시간에 룸 사용중을 미사용으로 업데이트 시키는 함수를 실행. //
         // 문이 열리지 않았다면 거부처리로 업데이트한다 //
       }

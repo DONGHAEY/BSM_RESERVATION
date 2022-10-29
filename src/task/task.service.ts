@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry, Timeout } from '@nestjs/schedule';
-import { CronJob } from 'cron';
+import { CronJob, job } from 'cron';
 
 @Injectable()
 export class TaskService {
@@ -10,5 +10,9 @@ export class TaskService {
     const timeout = setTimeout(callBack, milliseconds);
     this.schedulerRegistry.addTimeout(timeoutName, timeout);
     this.logger.log(`${timeoutName} is excuted`);
+  }
+  addNewSchedule(name: string, time: Date, callback: any) {
+    const job = new CronJob(time, callback);
+    this.schedulerRegistry.addCronJob(name, job);
   }
 }
