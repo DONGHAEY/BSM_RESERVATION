@@ -25,7 +25,7 @@ export class MovingCertificationController {
 
   /// 예약을 승인 및 거부하는 API ///
   @Post('/response')
-  // @Roles(BsmOauthUserRole.TEACHER)
+  // @Roles(BsmOauthUserRole.TEACHER) //잠깐 학생 역할인 내가 테스트하기위해..
   async responseToStudents(
     @Req() req: Request,
     @Body() responseReservationDto: ResponseReservationDto,
