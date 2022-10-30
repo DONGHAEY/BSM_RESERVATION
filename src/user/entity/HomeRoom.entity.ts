@@ -15,27 +15,15 @@ import { InChargeInfo } from './InChargeInfo.entity';
 @Index(['gradeNo', 'classNo'], { unique: true })
 export class HomeRoom extends InChargeInfo {
   // 담임 선생님의 정보 엔티티
-  @PrimaryGeneratedColumn({
-    name: 'in_charge_code',
-    type: 'int',
-  })
+  @PrimaryGeneratedColumn()
   inChargeCode: number;
 
-  @Column({
-    name: 'userCode',
-    type: 'int',
-  })
+  @Column()
   userCode: number;
 
-  @Column({
-    name: 'grade_no',
-    type: 'int',
-  })
+  @Column()
   gradeNo: number;
 
-  @Column({
-    name: 'class_no',
-    type: 'int',
-  })
+  @Column()
   classNo: number;
 }

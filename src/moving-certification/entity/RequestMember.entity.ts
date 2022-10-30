@@ -12,21 +12,15 @@ import { RequestInfo } from './RequestInfo.entity';
 
 @Entity('request_member')
 export class RequestMember extends BaseEntity {
-  @PrimaryColumn({
-    name: 'request_code',
-    type: 'int',
-  })
+  @PrimaryColumn()
   requestCode: number;
 
-  @PrimaryColumn({
-    name: 'user_code',
-    type: 'int',
-  })
+  @PrimaryColumn()
   userCode: number;
 
   @ManyToOne((type) => RequestInfo, (requestInfo) => requestInfo.requestMembers)
   @JoinColumn({
-    name: 'request_code',
+    name: 'requestCode',
   })
   requestInfo: RequestInfo;
 }

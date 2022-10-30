@@ -21,14 +21,15 @@ export class Token extends BaseEntity {
 
   @Column({
     nullable: false,
-    name: 'user_code',
   })
   userCode: number;
 
   @ManyToOne((type) => User, (user) => user.refereshTokens, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'user_code' })
+  @JoinColumn({
+    name: 'userCode',
+  })
   user: User;
 
   @Column({ nullable: false })

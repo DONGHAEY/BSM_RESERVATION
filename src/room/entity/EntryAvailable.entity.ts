@@ -17,65 +17,51 @@ import { RequestInfo } from 'src/moving-certification/entity/RequestInfo.entity'
 @Entity('entry_available')
 @Index(['roomCode', 'day', 'openAt'], { unique: true })
 export class EntryAvailable extends BaseEntity {
-  @PrimaryGeneratedColumn({
-    name: 'entry_available_code',
-    type: 'int',
-  })
+  @PrimaryGeneratedColumn()
   entryAvailableCode: number;
 
-  @Column({
-    name: 'room_code',
-    type: 'int',
-  })
+  @Column()
   roomCode: number;
 
   @ManyToOne((type) => Room, (room) => room.entryAvailable, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'room_code' })
+  @JoinColumn({
+    name: 'roomCode',
+  })
   room: Room;
 
-  @Column({
-    name: 'day',
-    type: 'int',
-  })
+  @Column()
   day: number; //요일 1-월, 2-화, 3-수, 4-목, 5-금
 
   @Column({
-    name: 'date',
     type: 'date',
     nullable: true,
   })
   date: Date | null;
 
   @Column({
-    name: 'open_at',
-    type: 'varchar', //0800 | 08시 00분 시작시간이 겹칠 수 없기 때문에 Primary를 주었다
+    //0800 | 08시 00분 시작시간이 겹칠 수 없기 때문에 Primary를 주었다
     length: 4,
   })
   openAt: string;
 
   @Column({
-    name: 'close_at',
-    type: 'varchar', //0830 | 08시 30분
+    //0830 | 08시 30분
     length: 4,
   })
   closeAt: string;
 
-  @Column({
-    name: 'min_occ',
-    type: 'int',
-  })
+  @Column()
   minOcc: number;
 
   @Column({
-    name: 'max_occ', //Maximum occupancy(최대 수용 인원)
+    //Maximum occupancy(최대 수용 인원)
     type: 'int',
   })
   maxOcc: number;
 
   @Column({
-    name: 'req_to',
     type: 'enum',
     enum: InCharge,
   })

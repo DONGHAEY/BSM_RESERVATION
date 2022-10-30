@@ -5,19 +5,12 @@ import { RequestInfo } from './RequestInfo.entity';
 
 @Entity()
 export class ResponseMember {
-  @PrimaryColumn({
-    name: 'request_code',
-    type: 'int',
-  })
+  @PrimaryColumn()
   requestCode: number;
-  @Column({
-    name: 'user_code',
-    type: 'int',
-  })
+  @Column()
   userCode: number;
 
   @Column({
-    name: 'response_type',
     type: 'enum',
     enum: ResponseType,
     default: ResponseType.NONE,
@@ -29,7 +22,7 @@ export class ResponseMember {
     (requestInfo) => requestInfo.responseMembers,
   )
   @JoinColumn({
-    name: 'request_code',
+    name: 'requestCode',
   })
   requestInfo: RequestInfo;
 }

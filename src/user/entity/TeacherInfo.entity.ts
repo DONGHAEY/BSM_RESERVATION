@@ -17,10 +17,7 @@ import { User } from './User.entity';
 
 @ChildEntity(BsmOauthUserRole.TEACHER)
 export class TeacherInfo extends User {
-  @PrimaryColumn({
-    name: 'user_code',
-    type: 'int',
-  })
+  @PrimaryColumn()
   userCode: number;
 
   @OneToMany((type) => InChargeInfo, (inChargeInfo) => inChargeInfo.teacher, {

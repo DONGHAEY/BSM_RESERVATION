@@ -11,9 +11,7 @@ import {
 import { Level } from '../types/Level.type';
 
 //single table pattern이라고 한다. //https://velog.io/@loakick/Nest.js-TypeORM-리팩터링-SingleTableInheritance //여기서 배웠는데 너무 좋다..
-@Entity({
-  name: 'user',
-})
+@Entity()
 @TableInheritance({
   column: {
     type: 'enum',
@@ -22,46 +20,31 @@ import { Level } from '../types/Level.type';
   },
 })
 export class User extends BaseEntity {
-  @PrimaryColumn({
-    name: 'user_code',
-    type: 'int',
-  })
+  @PrimaryColumn()
   userCode: number;
 
   @Column({
-    name: 'email',
-    type: 'varchar',
     unique: true,
   })
   email: string;
 
-  @Column({
-    name: 'name',
-    type: 'varchar',
-  })
+  @Column()
   name: string;
 
-  @Column({
-    name: 'nickname',
-    type: 'varchar',
-  })
+  @Column()
   nickname: string;
 
   @Column({
-    name: 'level',
     type: 'enum',
     enum: Level,
     default: Level.GENERAL,
   })
   level: Level;
 
-  @Column({
-    name: 'token',
-  })
+  @Column()
   token: string;
 
   @Column({
-    name: 'role',
     type: 'enum',
     enum: BsmOauthUserRole,
   })

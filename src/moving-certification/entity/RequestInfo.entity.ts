@@ -18,25 +18,19 @@ import { ResponseMember } from './ResponseMember.entity';
 
 @Entity('request')
 export class RequestInfo extends BaseEntity {
-  @PrimaryGeneratedColumn({
-    name: 'request_code',
-  })
+  @PrimaryGeneratedColumn()
   requestCode: number;
 
-  @Column({
-    name: 'entry_available_code',
-  })
+  @Column()
   entryAvailableCode: number;
 
   @Column({
-    name: 'request_when',
     type: 'datetime',
     default: () => 'CURRENT_TIMESTAMP',
   })
   requestWhen: Date; //언제 요청했는지
 
   @Column({
-    name: 'is_acc',
     type: 'enum',
     enum: isAccType,
     default: isAccType.WATING,
@@ -60,7 +54,7 @@ export class RequestInfo extends BaseEntity {
     (entryAvailable) => entryAvailable.requestedList,
   )
   @JoinColumn({
-    name: 'entry_available_code',
+    name: 'entryAvailableCode',
   })
   entryAvailableInfo: EntryAvailable;
 }

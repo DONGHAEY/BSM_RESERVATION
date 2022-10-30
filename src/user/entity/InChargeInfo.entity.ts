@@ -19,20 +19,13 @@ import { TeacherInfo } from './TeacherInfo.entity';
   },
 })
 export class InChargeInfo extends BaseEntity {
-  @PrimaryGeneratedColumn({
-    name: 'in_charge_code',
-    type: 'int',
-  })
+  @PrimaryGeneratedColumn()
   inChargeCode: number;
 
-  @Column({
-    name: 'user_code',
-    type: 'int',
-  })
+  @Column()
   userCode: number;
 
   @Column({
-    name: 'in_charge_type',
     type: 'enum',
     enum: InCharge,
   })
@@ -42,7 +35,7 @@ export class InChargeInfo extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({
-    name: 'user_code',
+    name: 'userCode',
   })
   teacher: TeacherInfo;
 }

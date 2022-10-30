@@ -12,28 +12,19 @@ import { RoomType } from '../type/Room.type';
 
 @Entity('room')
 export class Room extends BaseEntity {
-  @PrimaryGeneratedColumn({
-    name: 'room_code',
-    type: 'int',
-  })
+  @PrimaryGeneratedColumn()
   roomCode: number; //실제 학교 DB에 있는 room 코드를 등록 해야한다..
 
-  @Column({
-    name: 'room_name',
-    type: 'varchar',
-  })
+  @Column()
   roomName: string;
 
   @Column({
-    name: 'room_type',
     type: 'enum',
     enum: RoomType,
   })
   roomType: RoomType;
 
-  @Column({
-    name: 'is_using',
-  })
+  @Column()
   isUsing: boolean;
 
   @OneToMany(
