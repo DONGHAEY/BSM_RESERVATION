@@ -91,27 +91,44 @@ export class MovingCertificationService {
           isAccType.ALLOWED,
         );
         // 현재 방을 사용중으로 업데이트한다. //
-        await this.roomService.setRoomUsingStatus(
-          entryAvailableInfo.roomCode,
-          true,
-          requestMembers,
-        );
+        //만약 입장 가능 시간이 지났다면 바로 사용중으로 업데이트시키고 아니라면 입장 가능 시간에 문을 사용중으로 업데이트 시킨다.
+        if (
+          entryAvailableInfo.openAt <
+          `${new Date().getHours() + new Date().getMinutes()}`
+        ) {
+          await this.roomService.setRoomUsingStatus(
+            entryAvailableInfo.roomCode,
+            true,
+            requestMembers,
+          );
+        } else {
+          this.taskServie.addNewSchedule(
+            `${requestInfo.requestCode}-open-schedule`,
+            new Date(
+              `${new Date().toISOString().substring(0, 10)}T${[
+                entryAvailableInfo.openAt.slice(0, 2),
+                ':',
+                entryAvailableInfo.openAt.slice(2),
+              ].join('')}:00.000Z`,
+            ),
+            async () => {
+              await this.roomService.setRoomUsingStatus(
+                entryAvailableInfo.roomCode,
+                true,
+                requestMembers,
+              );
+            },
+          );
+        }
         // 닫는시간에 룸 사용을 미사용으로 업데이트시키는 함수를 실행한다.
         this.taskServie.addNewSchedule(
           `${requestInfo.requestCode}-close-schedule`,
           new Date(
-            `${new Date()
-              .toISOString()
-              .substring(
-                0,
-                10,
-              )}T${requestInfo.entryAvailableInfo.closeAt.substring(
-              0,
-              2,
-            )}:${requestInfo.entryAvailableInfo.closeAt.substring(
-              2,
-              4,
-            )}:00.000Z`,
+            `${new Date().toISOString().substring(0, 10)}T${[
+              entryAvailableInfo.closeAt.slice(0, 2),
+              ':',
+              entryAvailableInfo.closeAt.slice(2),
+            ].join('')}:00.000Z`,
           ),
           async () => {
             await this.roomService.setRoomUsingStatus(
