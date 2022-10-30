@@ -45,37 +45,26 @@ export class MovingCertificationService {
       response.requestCode,
       ['entryAvailableInfo', 'responseMembers', 'requestMembers'],
     );
+    if (!requestInfo) {
+      throw new HttpException('그런 항목은 없습니다', HttpStatus.NOT_FOUND);
+    }
     let { entryAvailableInfo, responseMembers, requestMembers } = requestInfo;
-
-    const isTeacher = responseMembers.find(
-      (responseMember) => responseMember.userCode === teacherInfo.userCode,
-    );
-    // 요청 정보에 현재 응답하는 선생님 정보가 포함되어있는지 확인한다.
-    if (!isTeacher) {
-      throw new HttpException(
-        '요청에 응답할 수 있는 권한이 없습니다',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-    // 요청이 현재 활성화 되어있는지 확인한다. ex)요청이 이미 거부 되어있거나, 시간이 지나있는 경우 //
-    if (requestInfo.isAcc === isAccType.DENIED || isAccType.ALLOWED) {
-      throw new HttpException(
-        '이미 처리된 요청입니다.',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    //현재 선생님이 응답할 권한이 있는지 확인한다.
+    await this.checkIsTeacher(responseMembers, teacherInfo);
+    //응답할 수 있는 요청인지 확인한다.
+    await this.checkCanResponse(requestInfo);
     // 현재 올바른 시간의 항목을 승인하는지 확인한다. //
     await this.checkEntryTime(entryAvailableInfo);
-    // 요청을 타입에 따라 응답한다. //
-    responseMembers = responseMembers.filter(
-      (responseMember) => responseMember.userCode !== teacherInfo.userCode,
-    );
+    //현재 응답하는 선생님의 응답정보를 무응답에서 해당하는 응답 타입으로 업데이트 시킨다.
     const myResponse: ResponseMember = await this.updateResponseType(
       requestInfo.requestCode,
       teacherInfo.userCode,
       response.responseType,
     );
-
+    // 요청을 타입에 따라 응답한다. //
+    responseMembers = responseMembers.filter(
+      (responseMember) => responseMember.userCode !== teacherInfo.userCode,
+    );
     responseMembers.push(<ResponseMember>myResponse);
     if (response.responseType === ResponseType.APPROVE) {
       //만약 모든 선생님이 승인을 했다면.. //
@@ -85,64 +74,21 @@ export class MovingCertificationService {
             responseMember.responseType === ResponseType.APPROVE,
         )
       ) {
-        // 요청 항목을 허용되었음으로 업데이트한다. //
+        // '요청 항목'을 허용되었음으로 업데이트한다. //
         await this.updateRequestAccByCode(
           requestInfo.requestCode,
           isAccType.ALLOWED,
         );
-        // 현재 방을 사용중으로 업데이트한다. //
-        //만약 입장 가능 시간이 지났다면 바로 사용중으로 업데이트시키고 아니라면 입장 가능 시간에 문을 사용중으로 업데이트 시킨다.
-        if (
-          entryAvailableInfo.openAt <
-          `${new Date().getHours() + new Date().getMinutes()}`
-        ) {
-          await this.roomService.setRoomUsingStatus(
-            entryAvailableInfo.roomCode,
-            true,
-            requestMembers,
-          );
-        } else {
-          this.taskServie.addNewSchedule(
-            `${requestInfo.requestCode}-open-schedule`,
-            new Date(
-              `${new Date().toISOString().substring(0, 10)}T${[
-                entryAvailableInfo.openAt.slice(0, 2),
-                ':',
-                entryAvailableInfo.openAt.slice(2),
-              ].join('')}:00.000Z`,
-            ),
-            async () => {
-              await this.roomService.setRoomUsingStatus(
-                entryAvailableInfo.roomCode,
-                true,
-                requestMembers,
-              );
-            },
-          );
-        }
-        // 닫는시간에 룸 사용을 미사용으로 업데이트시키는 함수를 실행한다.
-        this.taskServie.addNewSchedule(
-          `${requestInfo.requestCode}-close-schedule`,
-          new Date(
-            `${new Date().toISOString().substring(0, 10)}T${[
-              entryAvailableInfo.closeAt.slice(0, 2),
-              ':',
-              entryAvailableInfo.closeAt.slice(2),
-            ].join('')}:00.000Z`,
-          ),
-          async () => {
-            await this.roomService.setRoomUsingStatus(
-              requestInfo.entryAvailableInfo.roomCode,
-              false,
-              requestMembers,
-            );
-          },
+        //만약 현재시간이 이미 입장 가능 시간이 지났다면 바로 사용중으로 업데이트시키고, 아니라면 입장 가능 시간에 문을 사용중으로 업데이트 시킨다.
+        await this.roomService.setRoomUsingStatus(
+          entryAvailableInfo,
+          requestInfo,
         );
       }
     }
     // 알림을 보낸다 //
   }
-  //만들어야할 메서드 정리
+
   // 방 요청하기 기능  //
   async requestRoom(request: RequestReservationDto) {
     const entryAvailable = await this.roomService.getEntryAvailableInfoBycode(
@@ -155,10 +101,8 @@ export class MovingCertificationService {
     // 요청하는 사람이 이미 사용중인 방이 있는지도 확인해야한다. //
     // 입장 가능한 시간인지 확인한다. //
     await this.checkEntryTime(entryAvailable);
-    // 요청하는 사항의 항목이 이미 사용중인지, 예약 대기자가 있는지 확인한다. //
-    await this.checkAllowdAndWatingRequestInfo(
-      entryAvailable.entryAvailableCode,
-    );
+    // 요청하는 사항의 항목이 현재 요청이 가능한지 확인한다. 이미 사용중인지, 예약 대기자가 있는지 확인한다. //
+    await this.checkCanRequest(entryAvailable.entryAvailableCode);
     // 받은 유저 코드 리스트를 통해 유저정보를 리스트로 불러온다. //
     const studentList: StudentInfo[] =
       await this.userService.getUserListBycode<StudentInfo>(
@@ -211,6 +155,32 @@ export class MovingCertificationService {
       },
       // 시간이 지나도 승인이 되지 않아 거부가 되었다고 알림을 발송한다.. //
     );
+  }
+
+  private async checkCanResponse(requestInfo: RequestInfo) {
+    // 요청이 현재 활성화 되어있는지 확인한다. ex)요청이 이미 거부 되어있거나, 시간이 지나있는 경우 //
+    if (requestInfo.isAcc === isAccType.DENIED || isAccType.ALLOWED) {
+      throw new HttpException(
+        '이미 처리된 요청입니다.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  private async checkIsTeacher(
+    responseMembers: ResponseMember[],
+    teacherInfo: TeacherInfo,
+  ) {
+    const isTeacher = responseMembers.find(
+      (responseMember) => responseMember.userCode === teacherInfo.userCode,
+    );
+    // 요청 정보에 현재 응답하는 선생님 정보가 포함되어있는지 확인한다.
+    if (!isTeacher) {
+      throw new HttpException(
+        '요청에 응답할 수 있는 권한이 없습니다',
+        HttpStatus.FORBIDDEN,
+      );
+    }
   }
 
   //** 입장가능 정보에 요청타입에 따라 학생정보를 토대로 선생님들을 찾는 메서드이다. **//
@@ -269,9 +239,7 @@ export class MovingCertificationService {
 
   // * 요청이 현재 활성화 되어있는 상태인지 확인한다. * //
   //** 학생들이 요청을 하기위해 사용되는 메서드 이다, 예약하려는 항목에 대하여 요청전의 가장 최근 요청을 확인하여 예약을 할 수 있는지 체크하는 메서드이다. **//
-  private async checkAllowdAndWatingRequestInfo(
-    entryAvailableCode: number,
-  ): Promise<void> {
+  private async checkCanRequest(entryAvailableCode: number): Promise<void> {
     //요청 했었던 모든 정보중 최신 정보를 불러온다.
     const isAllowedRequest = await this.getTodayRequest(
       entryAvailableCode,

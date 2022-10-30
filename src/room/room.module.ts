@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TaskModule } from 'src/task/task.module';
 import { TypeOrmForCustomRepositoryModule } from 'src/TypeormForCustomRepository/typeormForCustomRepository.module';
 import { EntryAvailableRepository } from './repository/EntryAvailable.repository';
 import { RoomRepository } from './repository/Room.repository';
@@ -11,6 +12,7 @@ import { RoomService } from './room.service';
       RoomRepository,
       EntryAvailableRepository,
     ]),
+    TaskModule,
   ],
   controllers: [RoomController],
   providers: [RoomService],
