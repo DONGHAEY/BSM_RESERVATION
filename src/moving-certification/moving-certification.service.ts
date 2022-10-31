@@ -22,6 +22,7 @@ import { ResponseMember } from './entity/ResponseMember.entity';
 import { TaskService } from 'src/task/task.service';
 import { ResponseReservationDto } from 'src/moving-certification/dto/responseReservation.dto';
 import { ResponseType } from './types/response.type';
+import { request } from 'http';
 @Injectable()
 export class MovingCertificationService {
   constructor(
@@ -79,7 +80,7 @@ export class MovingCertificationService {
           requestInfo.requestCode,
           isAccType.ALLOWED,
         );
-        //만약 현재시간이 이미 입장 가능 시간이 지났다면 바로 사용중으로 업데이트시키고, 아니라면 입장 가능 시간에 문을 사용중으로 업데이트 시킨다.
+        // 만약 현재시간이 이미 입장 가능 시간이 지났다면 바로 사용 중으로 업데이트시키고, 아니라면 입장 가능 시간에 문을 사용중으로 업데이트 시킨다.
         await this.roomService.setRoomUsingStatus(
           entryAvailableInfo,
           requestInfo,
@@ -286,6 +287,85 @@ export class MovingCertificationService {
       );
     }
   }
+
+  // const list = await this.createQueryBuilder("bible_track").select([
+  //   'date',
+  //   'start_chapter as startChapter',
+  //   'end_chapter as endChapter',
+  //   'start_page as startPage',
+  //   'end_page as endPage',
+  //   'content',
+  //   'completed_amount as completedAmount'
+  // ]).leftJoin(
+  //     (qb) =>
+  //         qb
+  //         .from(CheckStamp, 'check_stamp')
+  //         .select(['status', 'track_date'])
+  //         .where(`user_id = ${userId} AND train_id = ${trainId}`),
+  //     'L',
+  //     'bible_track.date = L.track_date'
+  // )
+  // .addSelect('L.status')
+  // .where(`bible_track.train_id = ${trainId}`)
+  // .orderBy('date', 'DESC')
+  // .getRawMany();
+
+  async getMyRequestList(studentUserCode: number, isAcc: isAccType) {
+    // 1. TypeORM query builder를 통해, 학생이 요청 한 것들 중, WATING인 것들만 반환하는 메서드 //
+    let requestList = await this.requestMemberRepository
+      .createQueryBuilder()
+      .select('L')
+      .where(`userCode=${studentUserCode}`)
+      .leftJoin(
+        (qb) =>
+          qb
+            .from(RequestInfo, 'RequestInfo')
+            .select()
+            .where(`isAcc='${isAcc}'`),
+        'L',
+        'RequestMember.requestCode = L.requestCode',
+      )
+      .getRawMany();
+
+    return await Promise.all(
+      requestList.map(async ({ requestCode }) => {
+        return await this.getRequestByCode(requestCode, [
+          'requestMembers',
+          'responseMembers',
+        ]);
+      }),
+    );
+  }
+
+  async getRecievedRequestList(teacherUserCode: number, isAcc: isAccType) {
+    // 1. TypeORM query builder를 통해, 선생님이 요청 받은 것들 중, WATING인 것들만 반환하는 메서드
+    // select request.requestCode from responseMember, request where userCode = 103 and request.requestCode = responseMember.requestCode and isAcc = isAcc;
+    let requestList = await this.responseMemberRepository
+      .createQueryBuilder()
+      .select('L')
+      .where(`userCode=${teacherUserCode}`)
+      .leftJoin(
+        (qb) =>
+          qb
+            .from(RequestInfo, 'RequestInfo')
+            .select()
+            .where(`isAcc='${isAcc}'`),
+        'L',
+        'RequestMember.requestCode = L.requestCode',
+      )
+      .getRawMany();
+
+    return await Promise.all(
+      requestList.map(async ({ requestCode }) => {
+        return await this.getRequestByCode(requestCode, [
+          'requestMembers',
+          'responseMembers',
+        ]);
+      }),
+    );
+  }
+
+  async getThisWeekRequest(entryAvailableCode: number) {}
 
   private async getTodayRequest(entryAvailableCode: number, isAcc: isAccType) {
     return await this.requestInfoRepository.findOne({

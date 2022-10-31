@@ -16,7 +16,7 @@ import { isAccType } from '../types/isAcc.type';
 import { RequestMember } from './RequestMember.entity';
 import { ResponseMember } from './ResponseMember.entity';
 
-@Entity('request')
+@Entity('RequestInfo')
 export class RequestInfo extends BaseEntity {
   @PrimaryGeneratedColumn()
   requestCode: number;

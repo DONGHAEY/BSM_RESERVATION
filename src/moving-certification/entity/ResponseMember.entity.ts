@@ -3,10 +3,11 @@ import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ResponseType } from '../types/response.type';
 import { RequestInfo } from './RequestInfo.entity';
 
-@Entity()
+@Entity('ResponseMember')
 export class ResponseMember {
   @PrimaryColumn()
   requestCode: number;
+
   @Column()
   userCode: number;
 

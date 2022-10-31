@@ -6,6 +6,7 @@ import {
   Post,
   UseGuards,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { BsmOauthUserRole } from 'bsm-oauth';
 import { GetUser } from 'src/auth/decorator/getUser.decorator';
@@ -35,7 +36,8 @@ export class RoomController {
   /// 특정 룸의 정보를 자세히 불러오는 API ///
   @Get('/:roomCode')
   async getRoomDetailInfo(@Query('roomCode') roomCode: number) {
-    // 룸의 정보를 자세히 보여주어야하기 때문에, 오늘 예약이 되어있는 정보도 같이 보내주어야함.
+    // 룸의 정보를 자세히 보여주어야하기 때문에, 요일별 입장가능 정보들.
+    // 그 방의 오늘에 해당하는 현재 예약요청중 정보(WATING), 예약완료된(ALLOWED) 정보들
     return await this.roomService.getRoomBycode(roomCode, true);
   }
 
@@ -65,4 +67,7 @@ export class RoomController {
   ) {
     return await this.roomService.addEntryAvailableInfo(addEntryAvailableDto);
   }
+
+  @Delete('/deleteAvailableEntryInfo')
+  async deleteAvailableInfo() {}
 }

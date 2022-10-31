@@ -9,6 +9,8 @@ import { RequestReservationDto } from './dto/requestReservation.dto';
 import { ResponseReservationDto } from 'src/moving-certification/dto/responseReservation.dto';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { MovingCertificationService } from './moving-certification.service';
+import { isAccType } from './types/isAcc.type';
+import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 
 @Controller('moving-certification')
 @UseGuards(JwtAuthGuard, levelGuard, RolesGuard)
@@ -34,6 +36,16 @@ export class MovingCertificationController {
     return await this.certificationService.responseRoom(
       teacherInfo,
       responseReservationDto,
+    );
+  }
+
+  //TESTING
+  @Post('/myWatingRequests')
+  async getMyWatingRequestList(@Req() req: Request) {
+    const studentInfo: StudentInfo = <StudentInfo>req.user;
+    return await this.certificationService.getMyRequestList(
+      studentInfo.userCode,
+      isAccType.WATING,
     );
   }
 }

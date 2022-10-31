@@ -130,7 +130,7 @@ export class RoomService {
         timeString.slice(0, 2),
         ':',
         timeString.slice(2),
-      ].join('')}:00.000Z`,
+      ].join('')}`,
     );
   }
 }

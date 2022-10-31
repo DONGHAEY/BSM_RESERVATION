@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { RequestInfo } from './RequestInfo.entity';
 
-@Entity('request_member')
+@Entity('RequestMember')
 export class RequestMember extends BaseEntity {
   @PrimaryColumn()
   requestCode: number;
