@@ -288,28 +288,6 @@ export class MovingCertificationService {
     }
   }
 
-  // const list = await this.createQueryBuilder("bible_track").select([
-  //   'date',
-  //   'start_chapter as startChapter',
-  //   'end_chapter as endChapter',
-  //   'start_page as startPage',
-  //   'end_page as endPage',
-  //   'content',
-  //   'completed_amount as completedAmount'
-  // ]).leftJoin(
-  //     (qb) =>
-  //         qb
-  //         .from(CheckStamp, 'check_stamp')
-  //         .select(['status', 'track_date'])
-  //         .where(`user_id = ${userId} AND train_id = ${trainId}`),
-  //     'L',
-  //     'bible_track.date = L.track_date'
-  // )
-  // .addSelect('L.status')
-  // .where(`bible_track.train_id = ${trainId}`)
-  // .orderBy('date', 'DESC')
-  // .getRawMany();
-
   async getMyRequestList(studentUserCode: number, isAcc: isAccType) {
     // 1. TypeORM query builder를 통해, 학생이 요청 한 것들 중, WATING인 것들만 반환하는 메서드 //
     let requestList = await this.requestMemberRepository
@@ -332,6 +310,7 @@ export class MovingCertificationService {
         return await this.getRequestByCode(requestCode, [
           'requestMembers',
           'responseMembers',
+          'requestMembers.',
         ]);
       }),
     );

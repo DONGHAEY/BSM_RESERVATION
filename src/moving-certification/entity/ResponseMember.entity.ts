@@ -1,4 +1,5 @@
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
+import { User } from 'src/user/entity/User.entity';
 import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ResponseType } from '../types/response.type';
 import { RequestInfo } from './RequestInfo.entity';
@@ -17,6 +18,14 @@ export class ResponseMember {
     default: ResponseType.NONE,
   })
   responseType: ResponseType;
+
+  @ManyToOne((type) => User, {
+    eager: true,
+  })
+  @JoinColumn({
+    name: 'userCode',
+  })
+  userInfo: User;
 
   @ManyToOne(
     (type) => RequestInfo,

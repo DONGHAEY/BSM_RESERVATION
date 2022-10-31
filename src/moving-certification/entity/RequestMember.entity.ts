@@ -18,6 +18,14 @@ export class RequestMember extends BaseEntity {
   @PrimaryColumn()
   userCode: number;
 
+  @ManyToOne((type) => User, {
+    eager: true,
+  })
+  @JoinColumn({
+    name: 'userCode',
+  })
+  userInfo: User;
+
   @ManyToOne((type) => RequestInfo, (requestInfo) => requestInfo.requestMembers)
   @JoinColumn({
     name: 'requestCode',
