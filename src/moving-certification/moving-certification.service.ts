@@ -22,7 +22,7 @@ import { ResponseMember } from './entity/ResponseMember.entity';
 import { TaskService } from 'src/task/task.service';
 import { ResponseReservationDto } from 'src/moving-certification/dto/responseReservation.dto';
 import { ResponseType } from './types/response.type';
-import { request } from 'http';
+
 @Injectable()
 export class MovingCertificationService {
   constructor(
@@ -262,7 +262,6 @@ export class MovingCertificationService {
         HttpStatus.FORBIDDEN,
       );
     }
-    return;
   }
 
   private async checkCapacity(
@@ -290,27 +289,26 @@ export class MovingCertificationService {
 
   async getMyRequestList(studentUserCode: number, isAcc: isAccType) {
     // 1. TypeORM query builder를 통해, 학생이 요청 한 것들 중, WATING인 것들만 반환하는 메서드 //
-    let requestList = await this.requestMemberRepository
+    let myRequestList = await this.requestInfoRepository
       .createQueryBuilder()
-      .select('L')
-      .where(`userCode=${studentUserCode}`)
+      .select('RequestInfo.requestCode', 'requestCode')
+      .where(`isAcc='${isAcc}'`)
       .leftJoin(
         (qb) =>
           qb
-            .from(RequestInfo, 'RequestInfo')
+            .from(RequestMember, 'RequestMember')
             .select()
-            .where(`isAcc='${isAcc}'`),
+            .where(`userCode=${studentUserCode}`),
         'L',
-        'RequestMember.requestCode = L.requestCode',
+        'RequestInfo.requestCode = L.requestCode',
       )
       .getRawMany();
 
     return await Promise.all(
-      requestList.map(async ({ requestCode }) => {
+      myRequestList.map(async ({ requestCode }) => {
         return await this.getRequestByCode(requestCode, [
           'requestMembers',
           'responseMembers',
-          'requestMembers.',
         ]);
       }),
     );
@@ -319,18 +317,18 @@ export class MovingCertificationService {
   async getRecievedRequestList(teacherUserCode: number, isAcc: isAccType) {
     // 1. TypeORM query builder를 통해, 선생님이 요청 받은 것들 중, WATING인 것들만 반환하는 메서드
     // select request.requestCode from responseMember, request where userCode = 103 and request.requestCode = responseMember.requestCode and isAcc = isAcc;
-    let requestList = await this.responseMemberRepository
+    let requestList = await this.requestInfoRepository
       .createQueryBuilder()
-      .select('L')
-      .where(`userCode=${teacherUserCode}`)
+      .select('RequestInfo.requestCode', 'requestCode')
+      .where(`isAcc='${isAcc}'`)
       .leftJoin(
         (qb) =>
           qb
-            .from(RequestInfo, 'RequestInfo')
+            .from(ResponseMember, 'ResponseMember')
             .select()
-            .where(`isAcc='${isAcc}'`),
+            .where(`userCode=${teacherUserCode}`),
         'L',
-        'RequestMember.requestCode = L.requestCode',
+        'RequestInfo.requestCode = L.requestCode',
       )
       .getRawMany();
 
@@ -348,17 +346,15 @@ export class MovingCertificationService {
 
   private async getTodayRequest(entryAvailableCode: number, isAcc: isAccType) {
     return await this.requestInfoRepository.findOne({
-      where: [
-        {
-          entryAvailableCode,
-          requestWhen: MoreThan(
-            new Date(
-              `${new Date().toISOString().substring(0, 10)}T00:00:00.000Z`,
-            ),
+      where: {
+        entryAvailableCode,
+        requestWhen: MoreThan(
+          new Date(
+            `${new Date().toISOString().substring(0, 10)}T00:00:00.000Z`,
           ),
-          isAcc,
-        },
-      ],
+        ),
+        isAcc,
+      },
     });
   }
 
