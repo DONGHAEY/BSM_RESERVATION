@@ -22,7 +22,7 @@ export class MovingCertificationController {
   @Roles(BsmOauthUserRole.STUDENT)
   async requestToTeacher(@Body() requestReservationDto: RequestReservationDto) {
     // 학생이 이석 요청을 한다, 이 API를 사용한다.
-    return await this.certificationService.requestRoom(requestReservationDto);
+    // return await this.certificationService.requestRoom(requestReservationDto);
   }
 
   /// 예약을 승인 및 거부하는 API ///
@@ -32,11 +32,11 @@ export class MovingCertificationController {
     @Req() req: Request,
     @Body() responseReservationDto: ResponseReservationDto,
   ) {
-    const teacherInfo: TeacherInfo = <TeacherInfo>req.user;
-    return await this.certificationService.responseRoom(
-      teacherInfo,
-      responseReservationDto,
-    );
+    // const teacherInfo: TeacherInfo = <TeacherInfo>req.user;
+    // return await this.certificationService.responseRoom(
+    //   teacherInfo,
+    //   responseReservationDto,
+    // );
   }
 
   //TESTING

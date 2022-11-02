@@ -9,7 +9,9 @@ describe('MovingCertificationController', () => {
       controllers: [MovingCertificationController],
     }).compile();
 
-    controller = module.get<MovingCertificationController>(MovingCertificationController);
+    controller = module.get<MovingCertificationController>(
+      MovingCertificationController,
+    );
   });
 
   it('should be defined', () => {
