@@ -134,7 +134,7 @@ export class UserService {
     studentGradeList = [...new Set(studentGradeList)]; // 학생들 학년이 중복제거 된 학년 리스트이다.
     return await Promise.all(
       studentGradeList.map(async (grade) => {
-        const teacher = await this.findSelfStudyTimeTeacher(
+        const teacher = await this.getSelfStudyTimeTeacher(
           grade,
           selfStudyTime.day,
           selfStudyTime.date,
@@ -144,7 +144,7 @@ export class UserService {
           throw new HttpException(
             `${
               dayList[selfStudyTime.day] + '요일' || selfStudyTime.date
-            }에 자습담당선생님이 없습니다.`,
+            }에 자습담당선생님을 찾을 수 없습니다.`,
             HttpStatus.NOT_FOUND,
           );
         }
@@ -165,18 +165,32 @@ export class UserService {
     });
     return await Promise.all(
       arrUnique.map(async (student) => {
-        const teacher = await this.findHomeRoomTeacher(
+        const teacher = await this.getHomeRoomTeacher(
           student.grade,
           student.classNo,
         );
-        if (teacher) {
-          return teacher;
+        if (!teacher) {
+          throw new HttpException(
+            `${student.grade}학년${student.classNo}반 담임선생님을 찾을 수 없습니다`,
+            HttpStatus.NOT_FOUND,
+          );
         }
+        return teacher;
       }),
     );
   }
 
-  async findHomeRoomTeacher(
+  async getDormManagerTeacher() {
+    const { teacher } = await this.inchargeInfoRepository.findOne({
+      where: {
+        inChargeType: InCharge.DORMITORY,
+      },
+      relations: ['teacher'],
+    });
+    return teacher;
+  }
+
+  async getHomeRoomTeacher(
     inChargeGrade: number,
     inChargeClassNo: number,
   ): Promise<TeacherInfo> {
@@ -190,7 +204,7 @@ export class UserService {
     return teacher;
   }
 
-  async findSelfStudyTimeTeacher(
+  async getSelfStudyTimeTeacher(
     inChargeGrade: number,
     day: number,
     date: Date,

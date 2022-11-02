@@ -190,10 +190,9 @@ export class MovingCertificationService {
     if (entryAvailable.reqTo === InCharge.HOMEROOM) {
       //각 담임선생님에게 요청할 때 에는 (학년, 반)이 중복되지 않아야함.
       teacherList = await this.userService.findHomeRoomTeachers(studentList);
-      throw new HttpException('준비 중 입니다', HttpStatus.AMBIGUOUS);
     }
     if (entryAvailable.reqTo === InCharge.DORMITORY) {
-      throw new HttpException('준비 중 입니다', HttpStatus.AMBIGUOUS);
+      teacherList[0] = await this.userService.getDormManagerTeacher();
     }
     if (!teacherList.length) {
       throw new HttpException(
