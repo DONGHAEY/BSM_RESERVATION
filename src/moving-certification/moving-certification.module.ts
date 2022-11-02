@@ -12,7 +12,7 @@ import { ResponseMember } from './entity/ResponseMember.entity';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { TaskModule } from 'src/task/task.module';
-import { CustomRepositoryModule } from 'src/CustomRepository/CustomRepository.module';
+import { CustomRepositoryModule } from 'src/custom-repository/CustomRepository.module';
 import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
 import { RequestInfoRepository } from './repository/RequestInfoRepository';
 import { RequestMemberRepository } from './repository/RequestMemberRepository';

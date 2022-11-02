@@ -5,7 +5,7 @@ import { User } from './entity/User.entity';
 import { StudentInfo } from './entity/StudentInfo.entity';
 import { TeacherInfo } from './entity/TeacherInfo.entity';
 import { UserRepository } from './repository/User.Repository';
-import { CustomRepositoryModule } from 'src/CustomRepository/CustomRepository.module';
+import { CustomRepositoryModule } from 'src/custom-repository/CustomRepository.module';
 import { InChargeInfoRepository } from './repository/InchargeInfo.repository';
 import { SelfStudyTime } from './entity/SelfStudyTime.entity';
 import { HomeRoom } from './entity/HomeRoom.entity';

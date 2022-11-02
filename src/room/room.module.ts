@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TaskModule } from 'src/task/task.module';
-import { CustomRepositoryModule } from 'src/CustomRepository/CustomRepository.module';
+import { CustomRepositoryModule } from 'src/custom-repository/CustomRepository.module';
 import { EntryAvailable } from './entity/EntryAvailable.entity';
 import { EntryAvailableRepository } from './repository/EntryAvailable.repository';
 import { RoomRepository } from './repository/Room.repository';
