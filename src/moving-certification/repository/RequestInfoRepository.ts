@@ -131,7 +131,7 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
     );
   }
 
-  async getEntryAvailableRequestList(
+  async getRequestListAboutEntryAvailable(
     entryAvailableCode: number,
     startDate: Date,
     endDate: Date,
@@ -146,7 +146,7 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
     });
   }
 
-  async getRequestAboutRoom(
+  async getRequestListAboutRoom(
     roomCode: number,
     startDate: Date,
     endDate: Date,
