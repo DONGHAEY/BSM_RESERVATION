@@ -38,6 +38,7 @@
     "class-validator": "^0.13.2",
     "cookie-parser": "^1.4.6",
     "cross-env": "^7.0.3",
+    "helmet": "^6.0.0",
     "joi": "^17.6.2",
     "mysql2": "^2.3.3",
     "passport": "^0.6.0",
