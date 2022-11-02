@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { CustomRepository } from 'src/TypeormForCustomRepository/CustomRepository.decorator';
+import { CustomRepository } from 'src/CustomRepository/CustomRepository.decorator';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { Repository, MoreThan } from 'typeorm';
 import { RequestMember } from '../entity/RequestMember.entity';

@@ -3,9 +3,9 @@
 import { DynamicModule, Provider } from '@nestjs/common';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { TYPEORM_CUSTOM_REPOSITORY } from 'src/TypeormForCustomRepository/CustomRepository.decorator';
+import { TYPEORM_CUSTOM_REPOSITORY } from 'src/CustomRepository/CustomRepository.decorator';
 
-export class TypeOrmForCustomRepositoryModule {
+export class CustomRepositoryModule {
   public static forCustomRepository<T extends new (...args: any[]) => any>(
     repositories: T[],
   ): DynamicModule {
@@ -31,10 +31,9 @@ export class TypeOrmForCustomRepositoryModule {
         },
       });
     }
-
     return {
       exports: providers,
-      module: TypeOrmForCustomRepositoryModule,
+      module: CustomRepositoryModule,
       providers,
     };
   }

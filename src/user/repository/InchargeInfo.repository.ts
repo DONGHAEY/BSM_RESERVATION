@@ -1,4 +1,4 @@
-import { CustomRepository } from 'src/TypeormForCustomRepository/CustomRepository.decorator';
+import { CustomRepository } from 'src/CustomRepository/CustomRepository.decorator';
 import { SelfStudyTime } from '../entity/SelfStudyTime.entity';
 import { Repository } from 'typeorm';
 import { InChargeInfo } from '../entity/InChargeInfo.entity';

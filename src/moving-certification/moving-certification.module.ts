@@ -12,7 +12,7 @@ import { ResponseMember } from './entity/ResponseMember.entity';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { TaskModule } from 'src/task/task.module';
-import { TypeOrmForCustomRepositoryModule } from 'src/TypeormForCustomRepository/typeormForCustomRepository.module';
+import { CustomRepositoryModule } from 'src/CustomRepository/CustomRepository.module';
 import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
 import { RequestInfoRepository } from './repository/RequestInfoRepository';
 import { RequestMemberRepository } from './repository/RequestMemberRepository';
@@ -22,7 +22,7 @@ import { EntryAvailableRepository } from 'src/room/repository/EntryAvailable.rep
 
 @Module({
   imports: [
-    TypeOrmForCustomRepositoryModule.forCustomRepository([
+    CustomRepositoryModule.forCustomRepository([
       RequestInfoRepository,
       RequestMemberRepository,
       ResponseMemberRepository,
