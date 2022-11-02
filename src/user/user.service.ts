@@ -125,22 +125,69 @@ export class UserService {
   }
 
   async findSelfStudyTimeTeachers(
-    entryAvailable: EntryAvailable,
-    studentGradeList: number[],
+    selfStudyTime: { day: number; date: Date },
+    studentList: StudentInfo[],
   ) {
-    //SELFSTUDY TIME 담당 선생님인 경우
+    let studentGradeList: number[] = await Promise.all(
+      studentList.map(async (student) => student.grade),
+    );
+    studentGradeList = [...new Set(studentGradeList)]; // 학생들 학년이 중복제거 된 학년 리스트이다.
     return await Promise.all(
       studentGradeList.map(async (grade) => {
         const teacher = await this.findSelfStudyTimeTeacher(
           grade,
-          entryAvailable.day,
-          entryAvailable.date,
+          selfStudyTime.day,
+          selfStudyTime.date,
+        );
+        if (!teacher) {
+          const dayList = ['', '월', '화', '수', '목', '금'];
+          throw new HttpException(
+            `${
+              dayList[selfStudyTime.day] + '요일' || selfStudyTime.date
+            }에 자습담당선생님이 없습니다.`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        return teacher;
+      }),
+    );
+  }
+
+  async findHomeRoomTeachers(studentList: StudentInfo[]) {
+    const arrUnique = studentList.filter((character, idx, arr) => {
+      return (
+        arr.findIndex(
+          (item) =>
+            item.classNo === character.classNo &&
+            item.grade === character.grade,
+        ) === idx
+      );
+    });
+    return await Promise.all(
+      arrUnique.map(async (student) => {
+        const teacher = await this.findHomeRoomTeacher(
+          student.grade,
+          student.classNo,
         );
         if (teacher) {
           return teacher;
         }
       }),
     );
+  }
+
+  async findHomeRoomTeacher(
+    inChargeGrade: number,
+    inChargeClassNo: number,
+  ): Promise<TeacherInfo> {
+    const { teacher } = await this.homeRoomRepository.findOne({
+      where: {
+        classNo: inChargeClassNo,
+        gradeNo: inChargeGrade,
+      },
+      relations: ['teacher'],
+    });
+    return teacher;
   }
 
   async findSelfStudyTimeTeacher(

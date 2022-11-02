@@ -9,7 +9,9 @@ describe('MovingCertificationService', () => {
       providers: [MovingCertificationService],
     }).compile();
 
-    service = module.get<MovingCertificationService>(MovingCertificationService);
+    service = module.get<MovingCertificationService>(
+      MovingCertificationService,
+    );
   });
 
   it('should be defined', () => {

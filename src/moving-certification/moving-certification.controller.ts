@@ -43,9 +43,9 @@ export class MovingCertificationController {
   @Post('/myWatingRequests')
   async getMyWatingRequestList(@Req() req: Request) {
     const studentInfo: StudentInfo = <StudentInfo>req.user;
-    return await this.certificationService.getMyRequestList(
-      studentInfo.userCode,
-      isAccType.WATING,
-    );
+    // return await this.certificationService.getStudentRequestList(
+    //   studentInfo.userCode,
+    //   isAccType.WATING,
+    // );
   }
 }
