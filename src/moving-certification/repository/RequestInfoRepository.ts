@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { CustomRepository } from 'src/custom-repository/CustomRepository.decorator';
-import { Repository, MoreThan } from 'typeorm';
+import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
+import { Repository, MoreThan, Between } from 'typeorm';
 import { RequestInfo } from '../entity/RequestInfo.entity';
 import { RequestMember } from '../entity/RequestMember.entity';
 import { ResponseMember } from '../entity/ResponseMember.entity';
@@ -75,7 +76,11 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
     });
   }
 
-  async getStudentRequestList(studentUserCode: number, isAcc: isAccType) {
+  async getMyRequestList(
+    studentUserCode: number,
+    isAcc: isAccType,
+    relationOptions: string[] = [],
+  ) {
     // 1. TypeORM query builder를 통해, 학생이 요청 한 것들 중, WATING인 것들만 반환하는 메서드 //
     let myRequestList = await this.createQueryBuilder()
       .select('RequestInfo.requestCode', 'requestCode')
@@ -93,15 +98,16 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
 
     return await Promise.all(
       myRequestList.map(async ({ requestCode }) => {
-        return await this.getRequestByCode(requestCode, [
-          'requestMembers',
-          'responseMembers',
-        ]);
+        return await this.getRequestByCode(requestCode, relationOptions);
       }),
     );
   }
 
-  async getRecievedRequestList(teacherUserCode: number, isAcc: isAccType) {
+  async getRecievedRequestList(
+    teacherUserCode: number,
+    isAcc: isAccType,
+    relationOptions: string[] = [],
+  ) {
     // 1. TypeORM query builder를 통해, 선생님이 요청 받은 것들 중, WATING인 것들만 반환하는 메서드
     // select request.requestCode from responseMember, request where userCode = 103 and request.requestCode = responseMember.requestCode and isAcc = isAcc;
     let requestList = await this.createQueryBuilder()
@@ -120,10 +126,53 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
 
     return await Promise.all(
       requestList.map(async ({ requestCode }) => {
-        return await this.getRequestByCode(requestCode, [
-          'requestMembers',
-          'responseMembers',
-        ]);
+        return await this.getRequestByCode(requestCode, relationOptions);
+      }),
+    );
+  }
+
+  async getEntryAvailableRequestList(
+    entryAvailableCode: number,
+    startDate: Date,
+    endDate: Date,
+    relationOptions: string[] = [],
+  ) {
+    return await this.find({
+      where: {
+        entryAvailableCode,
+        requestWhen: Between(startDate, endDate),
+      },
+      relations: relationOptions,
+    });
+  }
+
+  async getRequestAboutRoom(
+    roomCode: number,
+    startDate: Date,
+    endDate: Date,
+    relationOptions: string[] = [],
+  ) {
+    const thisWeekRequestList = await this.createQueryBuilder()
+      .select('RequestInfo.requestCode', 'requestCode')
+      .where(`requestWhen >= :startWeek`, {
+        startDate,
+      })
+      .andWhere(`requestWhen < :endDate`, {
+        endDate,
+      })
+      .leftJoin(
+        (qb) =>
+          qb
+            .from(EntryAvailable, 'EntryAvailable')
+            .select()
+            .where(`roomCode=${roomCode}`),
+        'L',
+        'RequestInfo.entryAvailableCode=L.entryAvailableCode',
+      )
+      .getRawMany();
+    return await Promise.all(
+      thisWeekRequestList.map(async ({ requestCode }) => {
+        return await this.getRequestByCode(requestCode, relationOptions);
       }),
     );
   }

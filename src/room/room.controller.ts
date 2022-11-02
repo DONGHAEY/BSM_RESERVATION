@@ -38,7 +38,7 @@ export class RoomController {
   async getRoomDetailInfo(@Query('roomCode') roomCode: number) {
     // 룸의 정보를 자세히 보여주어야하기 때문에, 요일별 입장가능 정보들.
     // 그 방의 오늘에 해당하는 현재 예약요청중 정보(WATING), 예약완료된(ALLOWED) 정보들
-    return await this.roomService.getRoomBycode(roomCode, true);
+    return await this.roomService.getRoomDetail(roomCode);
   }
 
   /// 특정 타입에 속해 있는 룸 리스트를 불러오는 API ///
@@ -66,6 +66,26 @@ export class RoomController {
     @Body() addEntryAvailableDto: AddEntryAvailableDto,
   ) {
     return await this.roomService.addEntryAvailableInfo(addEntryAvailableDto);
+  }
+
+  //입장가능 정보에 대한 요청들을 반환
+  @Get('/:entryAvailableCode/getEntryAvailableRequestList')
+  @Levels(Level.GENERAL)
+  async getEntryAvailableRequestList(
+    @Query('entryAvailableCode') entryAvailableCode: number,
+    @Body('startDate') startDate: Date,
+    @Body('endDate') endDate: Date,
+  ) {}
+
+  // 해당 방에 대한 요청들을 반환
+  @Get('/:roomCode/getRoomRequestList')
+  @Levels(Level.GENERAL)
+  async getWeekendRequestList(
+    @Query('roomCode') roomCode: number,
+    @Body('startDate') startDate: Date,
+    @Body('endDate') endDate: Date,
+  ) {
+    // return await this.roomService.
   }
 
   @Delete('/deleteAvailableEntryInfo')

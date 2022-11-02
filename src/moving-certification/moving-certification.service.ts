@@ -89,10 +89,7 @@ export class MovingCertificationService {
           isAccType.ALLOWED,
         );
         // 만약 현재시간이 이미 입장 가능 시간이 지났다면 바로 사용 중으로 업데이트시키고, 아니라면 입장 가능 시간에 문을 사용중으로 업데이트 시킨다.
-        await this.roomService.setRoomUsingStatus(
-          entryAvailableInfo,
-          requestInfo,
-        );
+        await this.roomService.startUsingRoom(entryAvailableInfo, requestInfo);
       }
     }
     // 알림을 보낸다 //

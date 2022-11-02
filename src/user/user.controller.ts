@@ -21,32 +21,29 @@ import { Level } from './types/Level.type';
 import { UserService } from './user.service';
 
 @Controller('user')
+@UseGuards(JwtAuthGuard, levelGuard)
 export class UserController {
   constructor(private userService: UserService) {}
 
   /// 자신의 유저정보를 반환하는 API ///
-  @UseGuards(JwtAuthGuard)
   @Get('/')
   getUserInfo(@GetUser() user: User) {
     return user;
   }
 
   /// 다른사람의 유저 정보를 반환하는 API ///
-  @UseGuards(JwtAuthGuard)
   @Get('/:userCode')
   async getOtherUserInfo(@Query('userCode') userCode: number) {
     return await this.userService.getUserBycode(userCode);
   }
 
   /// 유저의 이름으로 유저들을 검색할 수 있는 API ///
-  @UseGuards(JwtAuthGuard)
   @Get('/search')
   async searchUser(@Body() searchUserDto: SearchUserDto) {
     return await this.userService.searchUser(searchUserDto);
   }
 
   /// 유저의 서비스 레벨을 변환할 수 있는 API - 관리자 권한 이상 ///
-  @UseGuards(JwtAuthGuard, levelGuard)
   @Post('/:userCode/changeUserLevel')
   @Levels(Level.ADMIN)
   async changeUserLevel(
@@ -57,7 +54,6 @@ export class UserController {
   }
 
   ///  선생님의 담당정보를 추가하는 API - 매니저 권한 이상 ///
-  @UseGuards(JwtAuthGuard, levelGuard)
   @Post('/:userCode/inchargeInfo')
   @Levels(Level.MANAGER)
   async addInchargeInfo(
@@ -68,7 +64,6 @@ export class UserController {
   }
 
   /// 선생님의 담당정보를 삭제하는 API - 매니저 권한 이상 ///
-  @UseGuards(JwtAuthGuard, levelGuard)
   @Post('/:userCode/inchargeInfo')
   @Levels(Level.MANAGER)
   async deleteInchargeInfo(@Query('inChargeCode') inChargeCode: number) {

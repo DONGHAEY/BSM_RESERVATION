@@ -29,10 +29,16 @@ export class RoomService {
     });
   }
 
+  async getRoomDetail(roomCode: number) {
+    return await this.roomRepository.getRoomBycode(roomCode, true);
+  }
+
   async addEntryAvailableInfo(
     addEntryAvailableDto: AddEntryAvailableDto,
   ): Promise<void> {
-    const room = this.getRoomBycode(addEntryAvailableDto.roomCode);
+    const room = this.roomRepository.getRoomBycode(
+      addEntryAvailableDto.roomCode,
+    );
     if (room) {
       await this.entryAvailableRepository.save(addEntryAvailableDto);
     }
@@ -55,18 +61,6 @@ export class RoomService {
     });
   }
 
-  async getRoomBycode(
-    roomCode: number,
-    loadEntryAvailableList: boolean = false,
-  ) {
-    return await this.roomRepository.findOne({
-      where: {
-        roomCode,
-      },
-      loadEagerRelations: loadEntryAvailableList,
-    });
-  }
-
   async getEntryAvailableInfoBycode(
     entryAvailableCode: number,
     relationOptions: string[] = [],
@@ -80,7 +74,7 @@ export class RoomService {
   }
 
   // 만약 현재시간이 이미 입장 가능 시간이 지났다면 바로 사용 중으로 업데이트시키고, 아니라면 입장 가능 시간에 문을 사용중으로 업데이트 시킨다.
-  async setRoomUsingStatus(
+  async startUsingRoom(
     entryAvailableInfo: EntryAvailable,
     requestInfo: RequestInfo,
   ) {
@@ -90,14 +84,20 @@ export class RoomService {
       parseInt(`${new Date().getHours() + new Date().getMinutes()}`)
     ) {
       //바로 사용중으로 업데이트시키고
-      await this.updateRoomUsingStatus(entryAvailableInfo.roomCode, true);
+      await this.roomRepository.updateRoomUsingStatus(
+        entryAvailableInfo.roomCode,
+        true,
+      );
     } else {
       // 아니라면 '입장 가능 시간' 때에 문을 사용중으로 업데이트 시킨다. //
       this.taskServie.addNewSchedule(
         `${requestInfo.requestCode}-open-schedule`,
         this.getTodayTime(entryAvailableInfo.closeAt),
         async () => {
-          await this.updateRoomUsingStatus(entryAvailableInfo.roomCode, true);
+          await this.roomRepository.updateRoomUsingStatus(
+            entryAvailableInfo.roomCode,
+            true,
+          );
         },
       );
     }
@@ -106,20 +106,20 @@ export class RoomService {
       `${requestInfo.requestCode}-close-schedule`,
       this.getTodayTime(entryAvailableInfo.closeAt),
       async () => {
-        await this.updateRoomUsingStatus(entryAvailableInfo.roomCode, false);
+        await this.roomRepository.updateRoomUsingStatus(
+          entryAvailableInfo.roomCode,
+          false,
+        );
       },
     );
   }
 
-  async updateRoomUsingStatus(roomCode: number, isUsing: boolean) {
-    return await this.roomRepository.update(
-      {
+  async getWeekendRequestList(roomCode: number) {
+    this.entryAvailableRepository.find({
+      where: {
         roomCode,
       },
-      {
-        isUsing,
-      },
-    );
+    });
   }
 
   /*/ timeString은 6시 인 경우 1800으로 입력되어야한다 */
