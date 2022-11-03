@@ -1,17 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { GetUser } from 'src/auth/decorator/getUser.decorator';
 import { Levels } from 'src/auth/decorator/level.decorator';
 import JwtAuthGuard from 'src/auth/guards/auth.guard';
 import { levelGuard } from 'src/auth/guards/level.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { DormitoryDto } from './dto/Dormitory.dto';
 import { HomeRoomDto } from './dto/HomeRoom.dto';
 import SearchUserDto from './dto/searchUser.dto';

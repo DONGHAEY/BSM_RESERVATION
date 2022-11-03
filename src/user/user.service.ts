@@ -2,7 +2,6 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,11 +10,7 @@ import { TeacherInfo } from './entity/TeacherInfo.entity';
 import { UserRepository } from './repository/User.Repository';
 import { Repository, Like } from 'typeorm';
 import { User } from './entity/User.entity';
-import BsmOauth, {
-  BsmOauthUserRole,
-  StudentResource,
-  TeacherResource,
-} from 'bsm-oauth';
+import { BsmOauthUserRole, StudentResource, TeacherResource } from 'bsm-oauth';
 import { Level } from './types/Level.type';
 import { HomeRoomDto } from './dto/HomeRoom.dto';
 import { DormitoryDto } from './dto/Dormitory.dto';
@@ -25,7 +20,6 @@ import { HomeRoom } from './entity/HomeRoom.entity';
 import { SelfStudyTime } from './entity/SelfStudyTime.entity';
 import { InChargeInfo } from './entity/InChargeInfo.entity';
 import SearchUserDto from './dto/searchUser.dto';
-import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
 
 @Injectable()
 export class UserService {

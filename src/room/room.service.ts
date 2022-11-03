@@ -1,6 +1,6 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { RequestInfo } from 'src/moving-certification/entity/RequestInfo.entity';
-import { RequestMember } from 'src/moving-certification/entity/RequestMember.entity';
+import { RequestInfoRepository } from 'src/moving-certification/repository/RequestInfoRepository';
 import { TaskService } from 'src/task/task.service';
 import { AddEntryAvailableDto } from './dto/entryAvailable.dto';
 import { EntryAvailable } from './entity/EntryAvailable.entity';
@@ -15,6 +15,7 @@ export class RoomService {
     private taskServie: TaskService,
     private roomRepository: RoomRepository,
     private entryAvailableRepository: EntryAvailableRepository,
+    private requestInfoRepository: RequestInfoRepository,
   ) {}
 
   async registerRoom(
@@ -30,7 +31,23 @@ export class RoomService {
   }
 
   async getRoomDetail(roomCode: number) {
-    return await this.roomRepository.getRoomBycode(roomCode, true);
+    const firstDate = this.getFirstOfThisWeek();
+    const roomInfo = await this.roomRepository.getRoomBycode(roomCode, true);
+    //moving-certification service에서 깨끗하게 해두기...
+
+    return {
+      roomInfo,
+    };
+  }
+
+  //Util에 집어넣기
+  getFirstOfThisWeek(): Date {
+    var currentDay = new Date();
+    return new Date(
+      currentDay.getFullYear(),
+      currentDay.getMonth(),
+      currentDay.getDate() + (1 - currentDay.getDay()),
+    );
   }
 
   async addEntryAvailableInfo(
@@ -112,14 +129,6 @@ export class RoomService {
         );
       },
     );
-  }
-
-  async getWeekendRequestList(roomCode: number) {
-    this.entryAvailableRepository.find({
-      where: {
-        roomCode,
-      },
-    });
   }
 
   /*/ timeString은 6시 인 경우 1800으로 입력되어야한다 */

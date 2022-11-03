@@ -6,12 +6,14 @@ import { EntryAvailableRepository } from './repository/EntryAvailable.repository
 import { RoomRepository } from './repository/Room.repository';
 import { RoomController } from './room.controller';
 import { RoomService } from './room.service';
+import { RequestInfoRepository } from 'src/moving-certification/repository/RequestInfoRepository';
 
 @Module({
   imports: [
     CustomRepositoryModule.forCustomRepository([
       RoomRepository,
       EntryAvailableRepository,
+      RequestInfoRepository,
     ]),
     TaskModule,
   ],

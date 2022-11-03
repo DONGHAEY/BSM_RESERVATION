@@ -40,12 +40,18 @@ export class RequestInfo extends BaseEntity {
   @OneToMany(
     (type) => ResponseMember,
     (responseMember) => responseMember.requestInfo,
+    {
+      eager: true,
+    },
   )
   responseMembers: ResponseMember[]; //요청받는 선생님의 유저들 이다.
 
   @OneToMany(
     (type) => RequestMember,
     (requestMember) => requestMember.requestInfo,
+    {
+      eager: true,
+    },
   )
   requestMembers: RequestMember[]; //요청하는 학생들의 유저들 이다.
 

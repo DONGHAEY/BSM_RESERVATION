@@ -1,23 +1,14 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RoomService } from 'src/room/room.service';
 import { RequestReservationDto } from './dto/requestReservation.dto';
 import { UserService } from 'src/user/user.service';
-import BsmOauth, { BsmOauthUserRole } from 'bsm-oauth';
-import { User } from 'src/user/entity/User.entity';
+import { BsmOauthUserRole } from 'bsm-oauth';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { InCharge } from 'src/user/types/InCharge.type';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
 import { isAccType } from './types/isAcc.type';
 import { RequestInfo } from './entity/RequestInfo.entity';
-import { RequestMember } from './entity/RequestMember.entity';
 import { ResponseMember } from './entity/ResponseMember.entity';
 import { TaskService } from 'src/task/task.service';
 import { ResponseReservationDto } from 'src/moving-certification/dto/responseReservation.dto';
@@ -171,31 +162,33 @@ export class MovingCertificationService {
       // 시간이 지나도 승인이 되지 않아 거부가 되었다고 알림을 발송한다.. //
     );
   }
+
   //** 입장가능 정보에 요청타입에 따라 학생정보를 토대로 선생님들을 찾는 메서드이다. **//
   private async findRequestTeachers(
     entryAvailable: EntryAvailable,
     studentList: StudentInfo[],
   ): Promise<TeacherInfo[]> {
     let teacherList: TeacherInfo[] = []; //서비스 초기 단계 서비스 진행위해 선생님 한 분 이라도 있으면 진행 할 수 있도록 한다.
-    if (entryAvailable.reqTo === InCharge.SELFSTUDYTIME) {
-      teacherList = await this.userService.findSelfStudyTimeTeachers(
-        { day: entryAvailable.day, date: entryAvailable.date },
-        studentList,
-      );
-    }
-    if (entryAvailable.reqTo === InCharge.HOMEROOM) {
-      //각 담임선생님에게 요청할 때 에는 (학년, 반)이 중복되지 않아야함.
-      teacherList = await this.userService.findHomeRoomTeachers(studentList);
-    }
-    if (entryAvailable.reqTo === InCharge.DORMITORY) {
-      teacherList[0] = await this.userService.getDormManagerTeacher();
-    }
-    if (!teacherList.length) {
-      throw new HttpException(
-        '요청을 받을 수 있는 선생님이 한분도 없습니다.',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    await Promise.all(
+      (async () => {
+        return {
+          [InCharge.SELFSTUDYTIME]: async () => {
+            teacherList = await this.userService.findSelfStudyTimeTeachers(
+              { day: entryAvailable.day, date: entryAvailable.date },
+              studentList,
+            );
+          },
+          [InCharge.DORMITORY]: async () => {
+            teacherList.push(await this.userService.getDormManagerTeacher());
+          },
+          [InCharge.HOMEROOM]: async () => {
+            teacherList = await this.userService.findHomeRoomTeachers(
+              studentList,
+            );
+          },
+        };
+      })[entryAvailable.reqTo](),
+    );
     return teacherList;
   }
 
