@@ -45,7 +45,6 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
   private async getTodayRequest(entryAvailableCode: number, isAcc: isAccType) {
     const today0oclock: Date = new Date();
     today0oclock.setHours(0, 0, 0, 0);
-
     return await this.findOne({
       where: {
         entryAvailableCode,
@@ -78,12 +77,20 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
 
   async getMyRequestList(
     //객체로 받아오기
-    // 그리고 startDate, endDate 추가하기 //startDate가 값이 없다면 월요일, endDate가 값이 없다면 지금으로 기본값 설정하기
-    studentUserCode: number,
-    isAcc: isAccType,
-    startDate: Date,
-    endDate: Date,
-    page: number = 0,
+    //user가 있는지 확인하기
+    {
+      userCode,
+      isAcc = null,
+      startDate = null,
+      endDate = null,
+      page = 0,
+    }: {
+      userCode: number;
+      isAcc: isAccType | null;
+      startDate: Date | null;
+      endDate: Date | null;
+      page: number;
+    },
   ) {
     // 1. TypeORM query builder를 통해, 학생이 요청 한 것들 중, WATING인 것들만 반환하는 메서드 //
     let myRequestList = await this.createQueryBuilder()
@@ -100,7 +107,7 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
           qb
             .from(RequestMember, 'RequestMember')
             .select()
-            .where(`userCode=${studentUserCode}`),
+            .where(`userCode=${userCode}`),
         'L',
         'RequestInfo.requestCode = L.requestCode',
       )
@@ -119,12 +126,21 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
   async getRecievedRequestList(
     //객체로 받아오기
     // 그리고 startDate, endDate 추가하기 //startDate가 값이 없다면 월요일, endDate가 값이 없다면 지금으로 기본값 설정하기
-    teacherUserCode: number,
-    isAcc: isAccType,
-    startDate: Date,
-    endDate: Date,
-    page: number = 0,
-    relationOptions: string[] = [],
+    {
+      userCode,
+      isAcc = null,
+      startDate = null,
+      endDate = null,
+      page = 0,
+      relationOptions = [],
+    }: {
+      userCode: number;
+      isAcc: isAccType | null;
+      startDate: Date | null;
+      endDate: Date | null;
+      page: number;
+      relationOptions: string[];
+    },
   ) {
     // 1. TypeORM query builder를 통해, 선생님이 요청 받은 것들 중, WATING인 것들만 반환하는 메서드
     // select request.requestCode from responseMember, request where userCode = 103 and request.requestCode = responseMember.requestCode and isAcc = isAcc;
@@ -142,7 +158,7 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
           qb
             .from(ResponseMember, 'ResponseMember')
             .select()
-            .where(`userCode=${teacherUserCode}`),
+            .where(`userCode=${userCode}`),
         'L',
         'RequestInfo.requestCode = L.requestCode',
       )
@@ -158,32 +174,19 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
     );
   }
 
-  // async getRequestListAboutEntryAvailable(
-  //   entryAvailableCode: number,
-  //   startDate: Date,
-  //   endDate: Date,
-  //   page: number = 1,
-  //   relationOptions: string[] = [],
-  // ) {
-  //   return await this.find({
-  //     where: {
-  //       entryAvailableCode,
-  //       requestWhen: Between(startDate, endDate),
-  //     },
-  //     relations: relationOptions,
-  //     take: page ? 10 : null,
-  //     skip: page ? page - 1 : null,
-  //   });
-  // }
-
-  async getRequestListAboutRoom(
-    //인자가 많으니 하나의 객체로 받아오면 좋을것같다..
-    roomCode: number,
-    startDate: Date,
-    endDate: Date,
-    page: number = 0,
-    relationOptions: string[] = [],
-  ) {
+  async getRequestListAboutRoom({
+    roomCode,
+    startDate,
+    endDate,
+    page = 0,
+    relationOptions = [],
+  }: {
+    roomCode: number;
+    startDate: Date;
+    endDate: Date;
+    page: number;
+    relationOptions: string[];
+  }) {
     let requestList = await this.createQueryBuilder()
       .select('RequestInfo.requestCode', 'requestCode')
       .where(startDate ? `requestWhen >= :startDate` : null, {
