@@ -23,7 +23,7 @@ export class ResponseMemberRepository extends Repository<ResponseMember> {
     );
   }
 
-  async checkTeacherInResponseMember(
+  async checkTeacherIsInMembers(
     responseMembers: ResponseMember[],
     teacherInfo: TeacherInfo,
   ) {

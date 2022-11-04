@@ -34,20 +34,9 @@ export class RoomService {
     const firstDate = this.getFirstOfThisWeek();
     const roomInfo = await this.roomRepository.getRoomBycode(roomCode, true);
     //moving-certification service에서 깨끗하게 해두기...
-
     return {
       roomInfo,
     };
-  }
-
-  //Util에 집어넣기
-  getFirstOfThisWeek(): Date {
-    var currentDay = new Date();
-    return new Date(
-      currentDay.getFullYear(),
-      currentDay.getMonth(),
-      currentDay.getDate() + (1 - currentDay.getDay()),
-    );
   }
 
   async addEntryAvailableInfo(
@@ -87,6 +76,14 @@ export class RoomService {
         entryAvailableCode,
       },
       relations: relationOptions,
+    });
+  }
+
+  async getRoomRequestList(roomCode: number, startDate: Date, endDate: Date) {
+    return await this.requestInfoRepository.getRequestListAboutRoom({
+      roomCode,
+      startDate,
+      endDate,
     });
   }
 
@@ -140,6 +137,15 @@ export class RoomService {
         ':',
         timeString.slice(2),
       ].join('')}`,
+    );
+  }
+  //Util에 집어넣기
+  getFirstOfThisWeek(): Date {
+    var currentDay = new Date();
+    return new Date(
+      currentDay.getFullYear(),
+      currentDay.getMonth(),
+      currentDay.getDate() + (1 - currentDay.getDay()),
     );
   }
 }

@@ -36,17 +36,13 @@ export class MovingCertificationService {
     response: ResponseReservationDto,
   ) {
     const requestInfo: RequestInfo =
-      await this.requestInfoRepository.getRequestByCode(response.requestCode, [
-        'entryAvailableInfo',
-        'responseMembers',
-        'requestMembers',
-      ]);
+      await this.requestInfoRepository.getRequestByCode(response.requestCode);
     if (!requestInfo) {
       throw new HttpException('그런 항목은 없습니다', HttpStatus.NOT_FOUND);
     }
     let { entryAvailableInfo, responseMembers, requestMembers } = requestInfo;
     //현재 선생님이 응답할 권한이 있는지 확인한다.
-    await this.responseMemberRepository.checkTeacherInResponseMember(
+    await this.responseMemberRepository.checkTeacherIsInMembers(
       responseMembers,
       teacherInfo,
     );
@@ -117,6 +113,7 @@ export class MovingCertificationService {
       studentList,
       entryAvailable,
     );
+    console.log('ddd');
     // 학생이 현재 사용하고자 하는 항목의 요청 타입에 따라 요청 할 선생님들을 불러온다. //
     const teacherList: TeacherInfo[] = await this.findRequestTeachers(
       entryAvailable,
@@ -126,6 +123,7 @@ export class MovingCertificationService {
     const { requestCode } = await this.requestInfoRepository.save({
       entryAvailableCode: request.entryAvailableCode,
     });
+    console.log(requestCode);
     // 요청하는 학생들을 저장 한다. //
     await Promise.all(
       request.userCodeList.map(async (userCode) => {
@@ -163,32 +161,42 @@ export class MovingCertificationService {
     );
   }
 
+  async getStudentWatingRequest(userCode: number) {
+    return await this.requestInfoRepository.getStudentRequestList({
+      userCode,
+      isAcc: isAccType.WATING,
+    });
+  }
+
+  async getTeacherRecievedRequest(userCode: number) {
+    return await this.requestInfoRepository.getRecievedRequestList({
+      userCode,
+      isAcc: isAccType.WATING,
+    });
+  }
+
   //** 입장가능 정보에 요청타입에 따라 학생정보를 토대로 선생님들을 찾는 메서드이다. **//
   private async findRequestTeachers(
     entryAvailable: EntryAvailable,
     studentList: StudentInfo[],
   ): Promise<TeacherInfo[]> {
     let teacherList: TeacherInfo[] = []; //서비스 초기 단계 서비스 진행위해 선생님 한 분 이라도 있으면 진행 할 수 있도록 한다.
-    await Promise.all(
-      (async () => {
-        return {
-          [InCharge.SELFSTUDYTIME]: async () => {
-            teacherList = await this.userService.findSelfStudyTimeTeachers(
-              { day: entryAvailable.day, date: entryAvailable.date },
-              studentList,
-            );
-          },
-          [InCharge.DORMITORY]: async () => {
-            teacherList.push(await this.userService.getDormManagerTeacher());
-          },
-          [InCharge.HOMEROOM]: async () => {
-            teacherList = await this.userService.findHomeRoomTeachers(
-              studentList,
-            );
-          },
-        };
-      })[entryAvailable.reqTo](),
-    );
+    const p = {
+      [InCharge.SELFSTUDYTIME]: async () => {
+        teacherList = await this.userService.findSelfStudyTimeTeachers(
+          { day: entryAvailable.day, date: entryAvailable.date },
+          studentList,
+        );
+      },
+      [InCharge.DORMITORY]: async () => {
+        teacherList.push(await this.userService.getDormManagerTeacher());
+      },
+      [InCharge.HOMEROOM]: async () => {
+        teacherList = await this.userService.findHomeRoomTeachers(studentList);
+      },
+    };
+    await p[entryAvailable.reqTo]();
+    console.log(teacherList);
     return teacherList;
   }
 

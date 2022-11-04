@@ -68,24 +68,20 @@ export class RoomController {
     return await this.roomService.addEntryAvailableInfo(addEntryAvailableDto);
   }
 
-  //입장가능 정보에 대한 요청들을 반환
-  @Get('/:entryAvailableCode/getEntryAvailableRequestList')
-  @Levels(Level.GENERAL)
-  async getEntryAvailableRequestList(
-    @Query('entryAvailableCode') entryAvailableCode: number,
-    @Body('startDate') startDate: Date,
-    @Body('endDate') endDate: Date,
-  ) {}
-
   // 해당 방에 대한 요청들을 반환
   @Get('/:roomCode/getRoomRequestList')
   @Levels(Level.GENERAL)
-  async getWeekendRequestList(
+  async getRoomRequestList(
+    //dto로 바꾸기
     @Query('roomCode') roomCode: number,
-    @Body('startDate') startDate: Date,
-    @Body('endDate') endDate: Date,
+    @Body('startDate') startDate: Date | null = null,
+    @Body('endDate') endDate: Date | null = null,
   ) {
-    // return await this.roomService.
+    return await this.roomService.getRoomRequestList(
+      roomCode,
+      startDate,
+      endDate,
+    );
   }
 
   @Delete('/deleteAvailableEntryInfo')

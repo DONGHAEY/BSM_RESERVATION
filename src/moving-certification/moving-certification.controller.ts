@@ -10,6 +10,7 @@ import { ResponseReservationDto } from 'src/moving-certification/dto/responseRes
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { MovingCertificationService } from './moving-certification.service';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
+import { GetUser } from 'src/auth/decorator/getUser.decorator';
 
 @Controller('moving-certification')
 @UseGuards(JwtAuthGuard, levelGuard, RolesGuard)
@@ -26,25 +27,24 @@ export class MovingCertificationController {
 
   /// 예약을 승인 및 거부하는 API ///
   @Post('/response')
-  // @Roles(BsmOauthUserRole.TEACHER) //잠깐 학생 역할인 내가 테스트하기위해..
+  @Roles(BsmOauthUserRole.TEACHER) //잠깐 학생 역할인 내가 테스트하기위해..
   async responseToStudents(
-    @Req() req: Request,
+    @GetUser() user: TeacherInfo,
     @Body() responseReservationDto: ResponseReservationDto,
   ) {
-    const teacherInfo: TeacherInfo = <TeacherInfo>req.user;
     return await this.certificationService.responseRoom(
-      teacherInfo,
+      user,
       responseReservationDto,
     );
   }
 
-  //TESTING
+  //학생과 선생님에 따라서 요청받았거나, 요청한 정보들을 보내준다.
   @Post('/myWatingRequests')
-  async getMyWatingRequestList(@Req() req: Request) {
-    const studentInfo: StudentInfo = <StudentInfo>req.user;
-    // return await this.certificationService.getStudentRequestList(
-    //   studentInfo.userCode,
-    //   isAccType.WATING,
-    // );
+  @Roles(BsmOauthUserRole.STUDENT)
+  async getMyWatingRequestList(@GetUser() user: StudentInfo) {
+    const studentInfo: StudentInfo = <StudentInfo>user;
+    return await this.certificationService.getStudentWatingRequest(
+      studentInfo.userCode,
+    );
   }
 }

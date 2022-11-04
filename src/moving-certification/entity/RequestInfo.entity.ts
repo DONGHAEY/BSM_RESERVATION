@@ -58,6 +58,9 @@ export class RequestInfo extends BaseEntity {
   @ManyToOne(
     (type) => EntryAvailable,
     (entryAvailable) => entryAvailable.requestedList,
+    {
+      eager: true,
+    },
   )
   @JoinColumn({
     name: 'entryAvailableCode',

@@ -5,25 +5,29 @@ import { Repository, MoreThan, Between } from 'typeorm';
 import { RequestInfo } from '../entity/RequestInfo.entity';
 import { RequestMember } from '../entity/RequestMember.entity';
 import { ResponseMember } from '../entity/ResponseMember.entity';
+import { getRequestListAboutRoomParams } from '../types/GetRequestAoutRoomParams';
 import { isAccType } from '../types/isAcc.type';
+import { UserRequestFindType } from '../types/UserRequestFind.type';
 
 @CustomRepository(RequestInfo)
 export class RequestInfoRepository extends Repository<RequestInfo> {
-  async getRequestByCode(requestCode: number, relationOptions: string[] = []) {
+  /*/ requestCode등으로 요청정보를 불러오는 매서드이다. */
+  async getRequestByCode(requestCode: number) {
     return await this.findOne({
       where: {
         requestCode,
       },
-      relations: relationOptions,
     });
   }
 
+  /*/ 선생님이 응답이 가능한 상태인지 체크하는 매서드이다. */
   async checkCanRequest(entryAvailableCode: number): Promise<void> {
-    //요청 했었던 모든 정보중 최신 정보를 불러온다.
+    //오늘 그 항목(그 룸의 시간)에 대해서 요청해서 "이미 승인된 항목이 있는지 확인하기 위해" 요청정보를 불러와본다.
     const isAllowedRequest = await this.getTodayRequest(
       entryAvailableCode,
       isAccType.ALLOWED,
     );
+    //오늘 그 항목(그 룸의 시간)에 대해서 요청해서 "이미 예약중인 항목이 있는지 확인하기 위해" 요청정보를 불러와본다.
     const isWatingRequest = await this.getTodayRequest(
       entryAvailableCode,
       isAccType.WATING,
@@ -42,6 +46,7 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
     }
   }
 
+  /*/ "오늘 해당 룸과 시간"을 요청한 요청정보를 불러오는 매서드이다. */
   private async getTodayRequest(entryAvailableCode: number, isAcc: isAccType) {
     const today0oclock: Date = new Date();
     today0oclock.setHours(0, 0, 0, 0);
@@ -54,8 +59,9 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
     });
   }
 
+  /*/ 요청이 응답이 가능한지 (이미 승인이되었거나 거부가 되었는지) 확인하는 매서드이다 */
   async checkCanResponse(requestInfo: RequestInfo) {
-    // 요청이 현재 활성화 되어있는지 확인한다. ex)요청이 이미 거부 되어있거나, 시간이 지나있는 경우 //
+    // 요청이 현재 활성화 되어있는지 확인한다. ex)요청이 이미 거부 되어있거나, 승인된 경우 //
     if (requestInfo.isAcc === isAccType.DENIED || isAccType.ALLOWED) {
       throw new HttpException(
         '이미 처리된 요청입니다.',
@@ -64,6 +70,7 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
     }
   }
 
+  /*/ 요청에 대한 결과를 (승인됨 또는 거부됨과 같이)업데이트하는 매서드이다. */
   async updateRequestAccByCode(requestCode: number, isAccType: isAccType) {
     return await this.update(
       {
@@ -75,33 +82,15 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
     );
   }
 
-  async getMyRequestList(
-    //객체로 받아오기
-    //user가 있는지 확인하기
-    {
-      userCode,
-      isAcc = null,
-      startDate = null,
-      endDate = null,
-      page = 0,
-    }: {
-      userCode: number;
-      isAcc: isAccType | null;
-      startDate: Date | null;
-      endDate: Date | null;
-      page: number;
-    },
-  ) {
-    // 1. TypeORM query builder를 통해, 학생이 요청 한 것들 중, WATING인 것들만 반환하는 메서드 //
-    let myRequestList = await this.createQueryBuilder()
+  /*/ 학생들입장에서 '요청했던' "요청 리스트를 불러오는 매서드" */
+  async getStudentRequestList({
+    userCode,
+    isAcc = null,
+    page = null,
+  }: UserRequestFindType) {
+    let requestList = await this.createQueryBuilder()
       .select('RequestInfo.requestCode', 'requestCode')
-      .where(startDate ? `requestWhen >= :startDate` : null, {
-        startDate,
-      })
-      .andWhere(endDate ? `requestWhen < :endDate` : null, {
-        endDate,
-      })
-      .andWhere(isAcc ? `isAcc='${isAcc}'` : ``)
+      .where(isAcc ? `isAcc='${isAcc}'` : ``)
       .leftJoin(
         (qb) =>
           qb
@@ -115,43 +104,21 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
       .take(page ? 10 : null)
       .skip(page ? page - 1 : null)
       .getRawMany();
-
     return await Promise.all(
-      myRequestList.map(async ({ requestCode }) => {
+      requestList.map(async ({ requestCode }) => {
         return await this.getRequestByCode(requestCode);
       }),
     );
   }
 
-  async getRecievedRequestList(
-    //객체로 받아오기
-    // 그리고 startDate, endDate 추가하기 //startDate가 값이 없다면 월요일, endDate가 값이 없다면 지금으로 기본값 설정하기
-    {
-      userCode,
-      isAcc = null,
-      startDate = null,
-      endDate = null,
-      page = 0,
-      relationOptions = [],
-    }: {
-      userCode: number;
-      isAcc: isAccType | null;
-      startDate: Date | null;
-      endDate: Date | null;
-      page: number;
-      relationOptions: string[];
-    },
-  ) {
-    // 1. TypeORM query builder를 통해, 선생님이 요청 받은 것들 중, WATING인 것들만 반환하는 메서드
-    // select request.requestCode from responseMember, request where userCode = 103 and request.requestCode = responseMember.requestCode and isAcc = isAcc;
+  /*/ 선생님들의 입장에서 '받은 요청들'을 불러오는 매서드이다. */
+  async getRecievedRequestList({
+    userCode,
+    isAcc = null,
+    page = null,
+  }: UserRequestFindType) {
     let requestList = await this.createQueryBuilder()
       .select('RequestInfo.requestCode', 'requestCode')
-      .where(startDate ? `requestWhen >= :startDate` : null, {
-        startDate,
-      })
-      .andWhere(endDate ? `requestWhen < :endDate` : null, {
-        endDate,
-      })
       .andWhere(isAcc ? `isAcc='${isAcc}'` : ``)
       .leftJoin(
         (qb) =>
@@ -169,30 +136,24 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
 
     return await Promise.all(
       requestList.map(async ({ requestCode }) => {
-        return await this.getRequestByCode(requestCode, relationOptions);
+        return await this.getRequestByCode(requestCode);
       }),
     );
   }
 
+  /*/ 특정 방에 대한 요청들을 불러오는 매서드이다. */
   async getRequestListAboutRoom({
     roomCode,
-    startDate,
-    endDate,
-    page = 0,
-    relationOptions = [],
-  }: {
-    roomCode: number;
-    startDate: Date;
-    endDate: Date;
-    page: number;
-    relationOptions: string[];
-  }) {
+    startDate = null,
+    endDate = null,
+    page = null,
+  }: getRequestListAboutRoomParams) {
     let requestList = await this.createQueryBuilder()
       .select('RequestInfo.requestCode', 'requestCode')
-      .where(startDate ? `requestWhen >= :startDate` : null, {
+      .where(startDate && endDate ? `requestWhen >= :startDate` : null, {
         startDate,
       })
-      .andWhere(endDate ? `requestWhen < :endDate` : null, {
+      .andWhere(endDate && startDate ? `requestWhen < :endDate` : null, {
         endDate,
       })
       .leftJoin(
@@ -210,7 +171,7 @@ export class RequestInfoRepository extends Repository<RequestInfo> {
       .getRawMany();
     return await Promise.all(
       requestList.map(async ({ requestCode }) => {
-        return await this.getRequestByCode(requestCode, relationOptions);
+        return await this.getRequestByCode(requestCode);
       }),
     );
   }
