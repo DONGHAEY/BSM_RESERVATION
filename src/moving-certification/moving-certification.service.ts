@@ -120,9 +120,10 @@ export class MovingCertificationService {
       studentList,
     );
     //요청사항을 저장 //
-    const { requestCode } = await this.requestInfoRepository.save({
+    const savedRequest = await this.requestInfoRepository.save({
       entryAvailableCode: request.entryAvailableCode,
     });
+    const { requestCode } = savedRequest;
     console.log(requestCode);
     // 요청하는 학생들을 저장 한다. //
     await Promise.all(
@@ -159,6 +160,7 @@ export class MovingCertificationService {
       },
       // 시간이 지나도 승인이 되지 않아 거부가 되었다고 알림을 발송한다.. //
     );
+    return { teacherList, savedRequest };
   }
 
   async getStudentWatingRequest(userCode: number) {
@@ -196,7 +198,6 @@ export class MovingCertificationService {
       },
     };
     await p[entryAvailable.reqTo]();
-    console.log(teacherList);
     return teacherList;
   }
 

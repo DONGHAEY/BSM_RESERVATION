@@ -133,15 +133,6 @@ export class UserService {
           selfStudyTime.day,
           selfStudyTime.date,
         );
-        if (!teacher) {
-          const dayList = ['', '월', '화', '수', '목', '금'];
-          throw new HttpException(
-            `${
-              dayList[selfStudyTime.day] + '요일' || selfStudyTime.date
-            }에 자습담당선생님을 찾을 수 없습니다.`,
-            HttpStatus.NOT_FOUND,
-          );
-        }
         return teacher;
       }),
     );
@@ -163,39 +154,45 @@ export class UserService {
           student.grade,
           student.classNo,
         );
-        if (!teacher) {
-          throw new HttpException(
-            `${student.grade}학년${student.classNo}반 담임선생님을 찾을 수 없습니다`,
-            HttpStatus.NOT_FOUND,
-          );
-        }
         return teacher;
       }),
     );
   }
 
   async getDormManagerTeacher() {
-    const { teacher } = await this.inchargeInfoRepository.findOne({
+    const inChargeOfDormInfo = await this.inchargeInfoRepository.findOne({
       where: {
         inChargeType: InCharge.DORMITORY,
       },
       relations: ['teacher'],
     });
-    return teacher;
+    if (inChargeOfDormInfo || inChargeOfDormInfo.teacher) {
+      return inChargeOfDormInfo.teacher;
+    }
+    throw new HttpException(
+      `해당하는 기숙사 관리 선생님이 존재하지 않습니다`,
+      HttpStatus.NOT_FOUND,
+    );
   }
 
   async getHomeRoomTeacher(
     inChargeGrade: number,
     inChargeClassNo: number,
   ): Promise<TeacherInfo> {
-    const { teacher } = await this.homeRoomRepository.findOne({
+    const inChargeOfHomeRoom = await this.homeRoomRepository.findOne({
       where: {
         classNo: inChargeClassNo,
         gradeNo: inChargeGrade,
       },
       relations: ['teacher'],
     });
-    return teacher;
+    if (inChargeOfHomeRoom || inChargeOfHomeRoom.teacher) {
+      return inChargeOfHomeRoom.teacher;
+    }
+    throw new HttpException(
+      `${inChargeGrade}학년${inChargeClassNo}반 담임선생님을 찾을 수 없습니다`,
+      HttpStatus.NOT_FOUND,
+    );
   }
 
   async getSelfStudyTimeTeacher(
@@ -203,7 +200,7 @@ export class UserService {
     day: number,
     date: Date,
   ): Promise<TeacherInfo | null> {
-    const { teacher } = await this.selfStudyTimeRepository.findOne({
+    const inChargeOfselfStudyTime = await this.selfStudyTimeRepository.findOne({
       where: {
         day: date ? null : day,
         date: date ? date : null,
@@ -211,7 +208,14 @@ export class UserService {
       },
       relations: ['teacher'],
     });
-    return teacher;
+    if (inChargeOfselfStudyTime && inChargeOfselfStudyTime.teacher) {
+      return inChargeOfselfStudyTime.teacher;
+    }
+    const dayList = ['', '월', '화', '수', '목', '금'];
+    throw new HttpException(
+      `${dayList[day] + '요일' || date}에 자습담당선생님을 찾을 수 없습니다.`,
+      HttpStatus.NOT_FOUND,
+    );
   }
 
   async checkUserListRole(userList: User[], role: BsmOauthUserRole) {
