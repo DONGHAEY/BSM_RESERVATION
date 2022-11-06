@@ -213,7 +213,9 @@ export class UserService {
     }
     const dayList = ['', '월', '화', '수', '목', '금'];
     throw new HttpException(
-      `${dayList[day] + '요일' || date}에 자습담당선생님을 찾을 수 없습니다.`,
+      `${
+        dayList[day] + '요일' || date.toLocaleString()
+      }에 ${inChargeGrade}학년 자습담당선생님을 찾을 수 없습니다.`,
       HttpStatus.NOT_FOUND,
     );
   }
