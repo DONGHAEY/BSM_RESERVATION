@@ -80,6 +80,13 @@ export class MovingCertificationService {
         await this.roomService.startUsingRoom(entryAvailableInfo, requestInfo);
       }
     }
+    // 한분의 선생님이 거부한다면 요청은 거부됨..
+    if (response.responseType === ResponseType.REJECT) {
+      await this.requestInfoRepository.updateRequestAccByCode(
+        requestInfo.requestCode,
+        isAccType.DENIED,
+      );
+    }
     // 알림을 보낸다 //
   }
 
