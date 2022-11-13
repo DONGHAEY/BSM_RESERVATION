@@ -65,4 +65,14 @@ export class MovingCertificationController {
   ) {
     return await this.certificationService.getMyPagenationRequest(user, page);
   }
+
+  @Get('/:userCode/request/:page')
+  @Roles(BsmOauthUserRole.TEACHER)
+  async getOtherUserPagenationRequest(
+    @Query('userCode') userCode: number,
+    @Query('page') page: number,
+  ) {
+    //다른사람의 요청정보 리스트를 리턴한다
+    return await this.certificationService.getStudentRequests(userCode, page);
+  }
 }

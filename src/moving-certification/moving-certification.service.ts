@@ -18,6 +18,7 @@ import { ResponseMemberRepository } from './repository/ResponseMemberRepository'
 import { EntryAvailableRepository } from 'src/room/repository/EntryAvailable.repository';
 import { RequestMemberRepository } from './repository/RequestMemberRepository';
 import { User } from 'src/user/entity/User.entity';
+import { userInfo } from 'os';
 
 @Injectable()
 export class MovingCertificationService {
@@ -131,7 +132,6 @@ export class MovingCertificationService {
       entryAvailableCode: request.entryAvailableCode,
     });
     const { requestCode } = savedRequest;
-    console.log(requestCode);
     // 요청하는 학생들을 저장 한다. //
     await Promise.all(
       request.userCodeList.map(async (userCode) => {
@@ -196,6 +196,16 @@ export class MovingCertificationService {
     if (userInfo.role === BsmOauthUserRole.TEACHER) {
       return await this.requestInfoRepository.getRecievedRequestList({
         userCode: userInfo.userCode,
+        page,
+      });
+    }
+  }
+
+  async getStudentRequests(userCode: number, page: number) {
+    const otherUser: User = await this.userService.getUserBycode(userCode);
+    if (otherUser.role === BsmOauthUserRole.STUDENT) {
+      return await this.requestInfoRepository.getStudentRequestList({
+        userCode: otherUser.userCode,
         page,
       });
     }
