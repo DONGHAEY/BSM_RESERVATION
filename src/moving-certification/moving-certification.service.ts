@@ -17,6 +17,7 @@ import { RequestInfoRepository } from './repository/RequestInfoRepository';
 import { ResponseMemberRepository } from './repository/ResponseMemberRepository';
 import { EntryAvailableRepository } from 'src/room/repository/EntryAvailable.repository';
 import { RequestMemberRepository } from './repository/RequestMemberRepository';
+import { User } from 'src/user/entity/User.entity';
 
 @Injectable()
 export class MovingCertificationService {
@@ -113,7 +114,6 @@ export class MovingCertificationService {
       studentList,
       entryAvailable,
     );
-    console.log('ddd');
     // 학생이 현재 사용하고자 하는 항목의 요청 타입에 따라 요청 할 선생님들을 불러온다. //
     const teacherList: TeacherInfo[] = await this.findRequestTeachers(
       entryAvailable,
@@ -163,18 +163,35 @@ export class MovingCertificationService {
     return { teacherList, savedRequest };
   }
 
-  async getStudentWatingRequest(userCode: number) {
-    return await this.requestInfoRepository.getStudentRequestList({
-      userCode,
-      isAcc: isAccType.WATING,
-    });
+  async getMyWatingRequests(userInfo: User) {
+    //seperating type getting and pagenation getting
+    if (userInfo.role === BsmOauthUserRole.STUDENT) {
+      return await this.requestInfoRepository.getStudentRequestList({
+        userCode: userInfo.userCode,
+        isAcc: isAccType.WATING,
+      });
+    }
+    if (userInfo.role === BsmOauthUserRole.TEACHER) {
+      return await this.requestInfoRepository.getRecievedRequestList({
+        userCode: userInfo.userCode,
+        isAcc: isAccType.WATING,
+      });
+    }
   }
 
-  async getTeacherRecievedRequest(userCode: number) {
-    return await this.requestInfoRepository.getRecievedRequestList({
-      userCode,
-      isAcc: isAccType.WATING,
-    });
+  async getMyPagenationRequest(userInfo: User, page: number) {
+    if (userInfo.role === BsmOauthUserRole.STUDENT) {
+      return await this.requestInfoRepository.getStudentRequestList({
+        userCode: userInfo.userCode,
+        page,
+      });
+    }
+    if (userInfo.role === BsmOauthUserRole.TEACHER) {
+      return await this.requestInfoRepository.getRecievedRequestList({
+        userCode: userInfo.userCode,
+        page,
+      });
+    }
   }
 
   //** 입장가능 정보에 요청타입에 따라 학생정보를 토대로 선생님들을 찾는 메서드이다. **//

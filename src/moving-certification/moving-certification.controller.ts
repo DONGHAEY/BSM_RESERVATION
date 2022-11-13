@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { BsmOauthUserRole } from 'bsm-oauth';
 import { Request } from 'express';
 import { Roles } from 'src/auth/decorator/roles.decorator';
@@ -11,6 +19,8 @@ import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { MovingCertificationService } from './moving-certification.service';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { GetUser } from 'src/auth/decorator/getUser.decorator';
+import { User } from 'src/user/entity/User.entity';
+import { isAccType } from './types/isAcc.type';
 
 @Controller('moving-certification')
 @UseGuards(JwtAuthGuard, levelGuard, RolesGuard)
@@ -39,12 +49,20 @@ export class MovingCertificationController {
   }
 
   //학생과 선생님에 따라서 요청받았거나, 요청한 정보들을 보내준다.
-  @Post('/myWatingRequests')
-  @Roles(BsmOauthUserRole.STUDENT)
-  async getMyWatingRequestList(@GetUser() user: StudentInfo) {
-    const studentInfo: StudentInfo = <StudentInfo>user;
-    return await this.certificationService.getStudentWatingRequest(
-      studentInfo.userCode,
-    );
+  @Get('/myWatingRequests')
+  @Roles(BsmOauthUserRole.STUDENT, BsmOauthUserRole.TEACHER)
+  async getMyRequests(@GetUser() user: User) {
+    const userInfo: User = user;
+    return await this.certificationService.getMyWatingRequests(<User>userInfo);
+  }
+
+  //페이지에 따라서 요청한 정보들을 보내준다.
+  @Get('/myRequests/:page')
+  @Roles(BsmOauthUserRole.STUDENT, BsmOauthUserRole.TEACHER)
+  async getMyPagenationRequests(
+    @GetUser() user: User,
+    @Query('page') page: number,
+  ) {
+    return await this.certificationService.getMyPagenationRequest(user, page);
   }
 }

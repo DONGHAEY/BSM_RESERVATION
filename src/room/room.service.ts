@@ -127,7 +127,6 @@ export class RoomService {
       },
     );
   }
-
   /*/ timeString은 6시 인 경우 1800으로 입력되어야한다 */
   // utill에다가 옮기기.. //
   private getTodayTime(timeString: string) {
