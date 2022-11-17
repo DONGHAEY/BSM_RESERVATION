@@ -18,7 +18,6 @@ import { ResponseMemberRepository } from './repository/ResponseMemberRepository'
 import { EntryAvailableRepository } from 'src/room/repository/EntryAvailable.repository';
 import { RequestMemberRepository } from './repository/RequestMemberRepository';
 import { User } from 'src/user/entity/User.entity';
-import { userInfo } from 'os';
 
 @Injectable()
 export class MovingCertificationService {

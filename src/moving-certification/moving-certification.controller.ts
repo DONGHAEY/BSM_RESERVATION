@@ -8,7 +8,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BsmOauthUserRole } from 'bsm-oauth';
-import { Request } from 'express';
 import { Roles } from 'src/auth/decorator/roles.decorator';
 import JwtAuthGuard from 'src/auth/guards/auth.guard';
 import { levelGuard } from 'src/auth/guards/level.guard';
@@ -17,10 +16,8 @@ import { RequestReservationDto } from './dto/requestReservation.dto';
 import { ResponseReservationDto } from 'src/moving-certification/dto/responseReservation.dto';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { MovingCertificationService } from './moving-certification.service';
-import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { GetUser } from 'src/auth/decorator/getUser.decorator';
 import { User } from 'src/user/entity/User.entity';
-import { isAccType } from './types/isAcc.type';
 
 @Controller('moving-certification')
 @UseGuards(JwtAuthGuard, levelGuard, RolesGuard)
@@ -66,7 +63,7 @@ export class MovingCertificationController {
     return await this.certificationService.getMyPagenationRequest(user, page);
   }
 
-  @Get('/:userCode/request/:page')
+  @Get('/getStudentRequests/:userCode/:page')
   @Roles(BsmOauthUserRole.TEACHER)
   async getOtherUserPagenationRequest(
     @Query('userCode') userCode: number,

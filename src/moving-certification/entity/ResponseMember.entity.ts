@@ -30,6 +30,9 @@ export class ResponseMember {
   @ManyToOne(
     (type) => RequestInfo,
     (requestInfo) => requestInfo.responseMembers,
+    {
+      onDelete: 'CASCADE',
+    },
   )
   @JoinColumn({
     name: 'requestCode',

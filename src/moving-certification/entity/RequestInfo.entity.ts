@@ -42,6 +42,7 @@ export class RequestInfo extends BaseEntity {
     (responseMember) => responseMember.requestInfo,
     {
       eager: true,
+      cascade: true,
     },
   )
   responseMembers: ResponseMember[]; //요청받는 선생님의 유저들 이다.
@@ -51,6 +52,7 @@ export class RequestInfo extends BaseEntity {
     (requestMember) => requestMember.requestInfo,
     {
       eager: true,
+      cascade: true,
     },
   )
   requestMembers: RequestMember[]; //요청하는 학생들의 유저들 이다.
@@ -60,6 +62,7 @@ export class RequestInfo extends BaseEntity {
     (entryAvailable) => entryAvailable.requestedList,
     {
       eager: true,
+      onDelete: 'SET NULL',
     },
   )
   @JoinColumn({

@@ -26,7 +26,13 @@ export class RequestMember extends BaseEntity {
   })
   userInfo: User;
 
-  @ManyToOne((type) => RequestInfo, (requestInfo) => requestInfo.requestMembers)
+  @ManyToOne(
+    (type) => RequestInfo,
+    (requestInfo) => requestInfo.requestMembers,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({
     name: 'requestCode',
   })
