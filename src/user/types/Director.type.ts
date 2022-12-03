@@ -1,4 +1,4 @@
-export enum InCharge {
+export enum DirectorType {
   HOMEROOM = '반담임',
   DORMITORY = '기숙사사감',
   SELFSTUDYTIME = '자습시간담당',

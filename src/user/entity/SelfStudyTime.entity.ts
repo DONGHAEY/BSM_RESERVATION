@@ -7,10 +7,10 @@ import {
   Unique,
   Index,
 } from 'typeorm';
-import { InCharge } from '../types/InCharge.type';
+import { DirectorType } from '../types/Director.type';
 import { InChargeInfo } from './InChargeInfo.entity';
 @Entity('self_study_time')
-@ChildEntity(InCharge.SELFSTUDYTIME)
+@ChildEntity(DirectorType.SELFSTUDYTIME)
 @Index(['gradeNo', 'day'], { unique: true })
 // @Index(['gradeNo', 'day', 'date'], {unique: true}) /// 조금 생각을 해보아야함...
 export class SelfStudyTime extends InChargeInfo {

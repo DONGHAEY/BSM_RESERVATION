@@ -4,7 +4,6 @@ import { RequestReservationDto } from './dto/requestReservation.dto';
 import { UserService } from 'src/user/user.service';
 import { BsmOauthUserRole } from 'bsm-oauth';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
-import { InCharge } from 'src/user/types/InCharge.type';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
 import { isAccType } from './types/isAcc.type';
@@ -18,6 +17,7 @@ import { ResponseMemberRepository } from './repository/ResponseMemberRepository'
 import { EntryAvailableRepository } from 'src/room/repository/EntryAvailable.repository';
 import { RequestMemberRepository } from './repository/RequestMemberRepository';
 import { User } from 'src/user/entity/User.entity';
+import { DirectorType } from 'src/user/types/Director.type';
 
 @Injectable()
 export class MovingCertificationService {
@@ -217,23 +217,22 @@ export class MovingCertificationService {
   ): Promise<TeacherInfo[]> {
     let teacherList: TeacherInfo[] = []; //서비스 초기 단계 서비스 진행위해 선생님 한 분 이라도 있으면 진행 할 수 있도록 한다.
     const p = {
-      [InCharge.SELFSTUDYTIME]: async () => {
+      [DirectorType.SELFSTUDYTIME]: async () => {
         teacherList = await this.userService.findSelfStudyTimeTeachers(
           { day: entryAvailable.day, date: entryAvailable.date },
           studentList,
         );
       },
-      [InCharge.DORMITORY]: async () => {
+      [DirectorType.DORMITORY]: async () => {
         teacherList.push(await this.userService.getDormManagerTeacher());
       },
-      [InCharge.HOMEROOM]: async () => {
+      [DirectorType.HOMEROOM]: async () => {
         teacherList = await this.userService.findHomeRoomTeachers(studentList);
       },
     };
     await p[entryAvailable.reqTo]();
     return teacherList;
   }
-
   //** 현재 시간이 입장가능한지 체크하는 메서드이다. **//
   // * 요청이 현재 활성화 되어있는 상태인지 확인한다. * //
   //** 학생들이 요청을 하기위해 사용되는 메서드 이다, 예약하려는 항목에 대하여 요청전의 가장 최근 요청을 확인하여 예약을 할 수 있는지 체크하는 메서드이다. **//

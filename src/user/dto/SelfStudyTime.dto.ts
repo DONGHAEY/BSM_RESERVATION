@@ -1,8 +1,8 @@
 import { IsEmpty, IsNotEmpty, IsOptional } from 'class-validator';
-import { InCharge } from '../types/InCharge.type';
+import { DirectorType } from '../types/Director.type';
 
 export class SelfStudyTimeDto {
-  readonly incharge: InCharge = InCharge.SELFSTUDYTIME;
+  readonly incharge: DirectorType = DirectorType.SELFSTUDYTIME;
   @IsNotEmpty()
   grade: number;
   @IsNotEmpty()

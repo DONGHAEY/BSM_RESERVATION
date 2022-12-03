@@ -1,4 +1,4 @@
-import { InCharge } from 'src/user/types/InCharge.type';
+import { DirectorType } from 'src/user/types/Director.type';
 import { IsNotEmpty } from 'class-validator';
 
 export class AddEntryAvailableDto {
@@ -15,5 +15,5 @@ export class AddEntryAvailableDto {
   @IsNotEmpty()
   maxOcc: number;
   @IsNotEmpty()
-  reqTo: InCharge;
+  reqTo: DirectorType;
 }

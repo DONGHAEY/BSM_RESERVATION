@@ -7,14 +7,14 @@ import {
   ManyToOne,
   TableInheritance,
 } from 'typeorm';
-import { InCharge } from '../types/InCharge.type';
+import { DirectorType } from '../types/Director.type';
 import { TeacherInfo } from './TeacherInfo.entity';
 
 @Entity('in_charge_info')
 @TableInheritance({
   column: {
     type: 'enum',
-    enum: InCharge,
+    enum: DirectorType,
     name: 'inChargeType',
   },
 })
@@ -27,9 +27,9 @@ export class InChargeInfo extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: InCharge,
+    enum: DirectorType,
   })
-  inChargeType: InCharge;
+  inChargeType: DirectorType;
 
   @ManyToOne((type) => TeacherInfo, (teacherInfo) => teacherInfo.inCharged, {
     onDelete: 'CASCADE',

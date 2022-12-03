@@ -15,7 +15,7 @@ import { Level } from './types/Level.type';
 import { HomeRoomDto } from './dto/HomeRoom.dto';
 import { DormitoryDto } from './dto/Dormitory.dto';
 import { SelfStudyTimeDto } from './dto/SelfStudyTime.dto';
-import { InCharge } from './types/InCharge.type';
+import { DirectorType } from './types/Director.type';
 import { HomeRoom } from './entity/HomeRoom.entity';
 import { SelfStudyTime } from './entity/SelfStudyTime.entity';
 import { InChargeInfo } from './entity/InChargeInfo.entity';
@@ -60,13 +60,13 @@ export class UserService {
     );
     await this.rolePass(teacherInfo, BsmOauthUserRole.TEACHER);
     //INCHARGE TYPE 에 따라 다르게 저장해야한다
-    if (dto.incharge === InCharge.DORMITORY) {
+    if (dto.incharge === DirectorType.DORMITORY) {
       await this.inchargeInfoRepository.save({ ...dto, userCode });
     }
-    if (dto.incharge === InCharge.HOMEROOM) {
+    if (dto.incharge === DirectorType.HOMEROOM) {
       await this.homeRoomRepository.save({ ...dto, userCode });
     }
-    if (dto.incharge === InCharge.SELFSTUDYTIME) {
+    if (dto.incharge === DirectorType.SELFSTUDYTIME) {
       await this.selfStudyTimeRepository.save({ ...dto, userCode });
     }
   }
@@ -162,7 +162,7 @@ export class UserService {
   async getDormManagerTeacher() {
     const inChargeOfDormInfo = await this.inchargeInfoRepository.findOne({
       where: {
-        inChargeType: InCharge.DORMITORY,
+        inChargeType: DirectorType.DORMITORY,
       },
       relations: ['teacher'],
     });

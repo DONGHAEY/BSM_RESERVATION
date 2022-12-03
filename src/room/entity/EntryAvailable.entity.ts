@@ -9,9 +9,9 @@ import {
   Index,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { InCharge } from 'src/user/types/InCharge.type';
 import { Room } from './Room.entity';
 import { RequestInfo } from 'src/moving-certification/entity/RequestInfo.entity';
+import { DirectorType } from 'src/user/types/Director.type';
 // import { RequestInfo } from '../../moving-certification/entity/RequestInfo.entity';
 
 @Entity('entry_available')
@@ -63,9 +63,9 @@ export class EntryAvailable extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: InCharge,
+    enum: DirectorType,
   })
-  reqTo: InCharge; //아침시간, 점심시간, 저녁자습시간, 저녁 기숙사시간에 따라, 요청 해야 하는 선생님이 달라지기 때문에 이 Column을 추가
+  reqTo: DirectorType; //아침시간, 점심시간, 저녁자습시간, 저녁 기숙사시간에 따라, 요청 해야 하는 선생님이 달라지기 때문에 이 Column을 추가
 
   @OneToMany(
     (type) => RequestInfo,

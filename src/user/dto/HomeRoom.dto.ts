@@ -1,8 +1,8 @@
 import { IsEmpty, IsNotEmpty, IsOptional } from 'class-validator';
-import { InCharge } from '../types/InCharge.type';
+import { DirectorType } from '../types/Director.type';
 
 export class HomeRoomDto {
-  readonly incharge: InCharge = InCharge.HOMEROOM;
+  readonly incharge: DirectorType = DirectorType.HOMEROOM;
   @IsNotEmpty()
   grade: number;
   @IsNotEmpty()
