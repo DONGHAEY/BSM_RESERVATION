@@ -3,12 +3,14 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { EntryAvailable } from './EntryAvailable.entity';
 import { RoomType } from '../type/Room.type';
+import { User } from 'src/user/entity/User.entity';
 
 @Entity('room')
 export class Room extends BaseEntity {
@@ -26,6 +28,17 @@ export class Room extends BaseEntity {
 
   @Column()
   isUsing: boolean;
+
+  @Column({
+    nullable: false,
+  })
+  roomManagerUserCode: number;
+
+  @ManyToOne((type) => User, (user) => user.myManagements)
+  @JoinColumn({
+    name: 'roomManagerUserCode',
+  })
+  roomManager: User;
 
   @OneToMany(
     (type) => EntryAvailable,

@@ -1,5 +1,6 @@
 import { BsmOauthUserRole } from 'bsm-oauth';
 import { Token } from 'src/auth/entity/token.entity';
+import { Room } from 'src/room/entity/Room.entity';
 import {
   BaseEntity,
   Column,
@@ -54,4 +55,7 @@ export class User extends BaseEntity {
     cascade: true,
   })
   refereshTokens: [];
+
+  @OneToMany((type) => Room, (room) => room.roomManager)
+  myManagements: Room[];
 }
