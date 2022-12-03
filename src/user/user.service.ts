@@ -20,11 +20,15 @@ import { HomeRoom } from './entity/HomeRoom.entity';
 import { SelfStudyTime } from './entity/SelfStudyTime.entity';
 import { InChargeInfo } from './entity/InChargeInfo.entity';
 import SearchUserDto from './dto/searchUser.dto';
+import { InChargeInfoRepository } from './repository/InchargeInfo.repository';
 
 @Injectable()
 export class UserService {
   constructor(
+    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
+    @InjectRepository(InChargeInfoRepository)
+    private inchargeInfoRepository: InChargeInfoRepository,
     @InjectRepository(StudentInfo)
     private studentRepository: Repository<StudentInfo>,
     @InjectRepository(TeacherInfo)
@@ -33,8 +37,6 @@ export class UserService {
     private homeRoomRepository: Repository<HomeRoom>,
     @InjectRepository(SelfStudyTime)
     private selfStudyTimeRepository: Repository<SelfStudyTime>,
-    @InjectRepository(InChargeInfo)
-    private inchargeInfoRepository: Repository<InChargeInfo>,
   ) {}
 
   async changeUserLevel(userCode: number, level: Level): Promise<void> {

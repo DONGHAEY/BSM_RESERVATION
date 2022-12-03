@@ -1,11 +1,10 @@
-import { CustomRepository } from 'src/custom-repository/CustomRepository.decorator';
 import { Room } from '../entity/Room.entity';
-import { Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { EntryAvailable } from '../entity/EntryAvailable.entity';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-@CustomRepository(EntryAvailable)
+@EntityRepository(EntryAvailable)
 export class EntryAvailableRepository extends Repository<EntryAvailable> {
   async checkCapacity(
     studentList: StudentInfo[],

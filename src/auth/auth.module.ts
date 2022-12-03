@@ -10,10 +10,12 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/User.entity';
 import { Token } from './entity/token.entity';
+import { UserRepository } from 'src/user/repository/User.Repository';
+import { tokenRepository } from './repository/token.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Token]),
+    TypeOrmModule.forFeature([UserRepository, tokenRepository]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.SECRET_KEY,
@@ -23,5 +25,6 @@ import { Token } from './entity/token.entity';
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
+  exports: [TypeOrmModule],
 })
 export class AuthModule {}

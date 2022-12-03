@@ -12,21 +12,18 @@ import { ResponseMember } from './entity/ResponseMember.entity';
 import { StudentInfo } from 'src/user/entity/StudentInfo.entity';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
 import { TaskModule } from 'src/task/task.module';
-import { CustomRepositoryModule } from 'src/custom-repository/CustomRepository.module';
 import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
 import { RequestInfoRepository } from './repository/RequestInfoRepository';
 import { RequestMemberRepository } from './repository/RequestMemberRepository';
 import { ResponseMemberRepository } from './repository/ResponseMemberRepository';
 import { EntryAvailableRepository } from 'src/room/repository/EntryAvailable.repository';
-// import { ResponseMember } from './entdity/ResponseMember.entity';
 
 @Module({
   imports: [
-    CustomRepositoryModule.forCustomRepository([
+    TypeOrmModule.forFeature([
       RequestInfoRepository,
       RequestMemberRepository,
       ResponseMemberRepository,
-      EntryAvailableRepository,
     ]),
     RoomModule,
     UserModule,
@@ -34,5 +31,6 @@ import { EntryAvailableRepository } from 'src/room/repository/EntryAvailable.rep
   ],
   providers: [MovingCertificationService],
   controllers: [MovingCertificationController],
+  exports: [TypeOrmModule],
 })
 export class MovingCertificationModule {}

@@ -17,14 +17,15 @@ import BsmOauth, {
 } from 'bsm-oauth';
 import { Token } from './entity/token.entity';
 import { randomBytes } from 'crypto';
+import { tokenRepository } from './repository/token.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-    @InjectRepository(Token)
-    private tokenRepository: Repository<Token>,
+    @InjectRepository(tokenRepository)
+    private tokenRepository: tokenRepository,
   ) {
     this.bsmOauth = new BsmOauth(
       process.env.BSM_OAUTH_CLIENT_ID,

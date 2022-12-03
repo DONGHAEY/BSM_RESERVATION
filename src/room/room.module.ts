@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { TaskModule } from 'src/task/task.module';
-import { CustomRepositoryModule } from 'src/custom-repository/CustomRepository.module';
 import { EntryAvailable } from './entity/EntryAvailable.entity';
 import { EntryAvailableRepository } from './repository/EntryAvailable.repository';
 import { RoomRepository } from './repository/Room.repository';
 import { RoomController } from './room.controller';
 import { RoomService } from './room.service';
 import { RequestInfoRepository } from 'src/moving-certification/repository/RequestInfoRepository';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
-    CustomRepositoryModule.forCustomRepository([
+    TypeOrmModule.forFeature([
       RoomRepository,
       EntryAvailableRepository,
       RequestInfoRepository,
@@ -19,6 +19,6 @@ import { RequestInfoRepository } from 'src/moving-certification/repository/Reque
   ],
   controllers: [RoomController],
   providers: [RoomService],
-  exports: [RoomService],
+  exports: [TypeOrmModule, RoomService],
 })
 export class RoomModule {}

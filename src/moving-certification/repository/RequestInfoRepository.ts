@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { CustomRepository } from 'src/custom-repository/CustomRepository.decorator';
 import { EntryAvailable } from 'src/room/entity/EntryAvailable.entity';
-import { Repository, MoreThan, Between } from 'typeorm';
+import { Repository, MoreThan, Between, EntityRepository } from 'typeorm';
 import { RequestInfo } from '../entity/RequestInfo.entity';
 import { RequestMember } from '../entity/RequestMember.entity';
 import { ResponseMember } from '../entity/ResponseMember.entity';
@@ -9,7 +8,7 @@ import { getRequestListAboutRoomParams } from '../types/GetRequestAoutRoomParams
 import { isAccType } from '../types/isAcc.type';
 import { UserRequestFindType } from '../types/UserRequestFind.type';
 
-@CustomRepository(RequestInfo)
+@EntityRepository(RequestInfo)
 export class RequestInfoRepository extends Repository<RequestInfo> {
   /*/ requestCode등으로 요청정보를 불러오는 매서드이다. */
   async getRequestByCode(requestCode: number) {

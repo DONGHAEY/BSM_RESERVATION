@@ -1,11 +1,10 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { CustomRepository } from 'src/custom-repository/CustomRepository.decorator';
 import { TeacherInfo } from 'src/user/entity/TeacherInfo.entity';
-import { Repository, MoreThan } from 'typeorm';
+import { Repository, MoreThan, EntityRepository } from 'typeorm';
 import { ResponseMember } from '../entity/ResponseMember.entity';
 import { ResponseType } from '../types/response.type';
 
-@CustomRepository(ResponseMember)
+@EntityRepository(ResponseMember)
 export class ResponseMemberRepository extends Repository<ResponseMember> {
   async updateResponseType(
     requestCode: number,

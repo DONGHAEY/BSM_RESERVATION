@@ -1,8 +1,7 @@
-import { CustomRepository } from 'src/custom-repository/CustomRepository.decorator';
 import { Room } from '../entity/Room.entity';
-import { Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 
-@CustomRepository(Room)
+@EntityRepository(Room)
 export class RoomRepository extends Repository<Room> {
   async updateRoomUsingStatus(roomCode: number, isUsing: boolean) {
     return await this.update(

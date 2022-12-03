@@ -10,16 +10,17 @@ import { User } from 'src/user/entity/User.entity';
 import { Token } from '../entity/token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
+import { UserRepository } from 'src/user/repository/User.Repository';
+import { tokenRepository } from '../repository/token.repository';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    @InjectRepository(Token)
-    private tokenRepository: Repository<Token>,
+    private userRepository: UserRepository,
+    @InjectRepository(tokenRepository)
+    private tokenRepository: tokenRepository,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
