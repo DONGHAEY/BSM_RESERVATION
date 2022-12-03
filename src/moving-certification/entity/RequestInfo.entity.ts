@@ -62,7 +62,7 @@ export class RequestInfo extends BaseEntity {
     (entryAvailable) => entryAvailable.requestedList,
     {
       eager: true,
-      onDelete: 'SET NULL',
+      onDelete: 'CASCADE',
     },
   )
   @JoinColumn({

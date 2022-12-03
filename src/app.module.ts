@@ -19,11 +19,11 @@ import { TaskModule } from './task/task.module';
       useFactory: (configService: ConfigService) => {
         return {
           type: 'mysql',
-          host: configService.get('DB_HOST'),
+          host: process.env.DB_HOST,
           port: 3306,
-          username: configService.get('DB_USERNAME'),
-          password: configService.get('DB_PASSWORD'),
-          database: configService.get('DB_NAME') || 'bssm_reservation',
+          username: process.env.DB_USERNAME,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME || 'bssm_reservation',
           synchronize: true,
           entities: [__dirname + '/**/entity/*.entity.{js,ts}'],
           logging: true,

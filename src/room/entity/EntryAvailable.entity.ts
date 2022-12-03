@@ -70,6 +70,9 @@ export class EntryAvailable extends BaseEntity {
   @OneToMany(
     (type) => RequestInfo,
     (requestInfo) => requestInfo.entryAvailableInfo,
+    {
+      cascade: true,
+    },
   )
   requestedList: RequestInfo[];
 }
